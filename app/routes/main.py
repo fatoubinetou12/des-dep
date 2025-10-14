@@ -4,7 +4,7 @@ from datetime import datetime
 from functools import wraps
 
 from flask import (
-    Blueprint, render_template, request, session, abort,
+    Blueprint, render_template, request, session,
     redirect, url_for, flash, current_app, jsonify
 )
 from werkzeug.utils import secure_filename
@@ -17,7 +17,8 @@ from app.forms.forms import (
 )
 from app.models.models import Vehicule, Reservation, TarifForfait, TarifRegle
 
-main = Blueprint('main', __name__)
+# ⬇️ important: éviter les 404 liés au / final
+main = Blueprint('main', __name__, strict_slashes=False)
 
 # ------------------------
 # Helpers
@@ -42,17 +43,11 @@ def parse_datetime_local(value: str):
     if not value:
         return None
     s = value.strip()
-    # Format standard datetime-local (sans secondes)
-    try:
-        return datetime.strptime(s, '%Y-%m-%dT%H:%M')
-    except ValueError:
-        pass
-    # Variante avec secondes
-    try:
-        return datetime.strptime(s, '%Y-%m-%dT%H:%M:%S')
-    except ValueError:
-        pass
-    # Dernière chance: fromisoformat (gère microsecondes, etc.)
+    for fmt in ('%Y-%m-%dT%H:%M', '%Y-%m-%dT%H:%M:%S'):
+        try:
+            return datetime.strptime(s, fmt)
+        except ValueError:
+            pass
     try:
         return datetime.fromisoformat(s)
     except Exception:
@@ -220,17 +215,19 @@ def vehicules_disponibles():
     vehicules = Vehicule.query.filter_by(disponible=True).all()
     return render_template('vehicules_disponibles.html', vehicules=vehicules)
 
+# 1) Formulaire
 @main.route('/reservation/<int:vehicule_id>')
 def reservation_page(vehicule_id):
     v = Vehicule.query.get_or_404(vehicule_id)
     google_key = current_app.config.get("GOOGLE_MAPS_KEY")
     return render_template('reservation.html', vehicule=v, form=ReservationForm(), google_key=google_key)
 
+# 2) Récapitulatif
 @main.route('/reservation/<int:vehicule_id>/recap', methods=['POST'])
 def reservation_recap(vehicule_id):
     v = Vehicule.query.get_or_404(vehicule_id)
     form = ReservationForm()
-    data = {k: request.form.get(k) for k in [
+    data = {k: (request.form.get(k) or '').strip() for k in [
         'client_nom','client_email','client_telephone','date_heure','vol_info',
         'adresse_depart','adresse_arrivee','nb_passagers','nb_valises_23kg',
         'nb_valises_10kg','nb_sieges_bebe','poids_enfants','paiement','commentaires'
@@ -240,45 +237,44 @@ def reservation_recap(vehicule_id):
         return redirect(url_for('main.reservation_page', vehicule_id=vehicule_id))
     return render_template('fiche_vehicule.html', vehicule=v, data=data, form=form)
 
+# 3) Enregistrement + emails (POST)
 @main.route('/reserver/<int:vehicule_id>', methods=['POST'])
 def reserver_vehicule(vehicule_id):
     v = Vehicule.query.get_or_404(vehicule_id)
 
-    # 1) Collecte brute
+    # Collecte brute
     data = {k: request.form.get(k) for k in [
         'client_nom','client_email','client_telephone','date_heure','vol_info',
         'adresse_depart','adresse_arrivee','nb_passagers','nb_valises_23kg',
         'nb_valises_10kg','nb_sieges_bebe','poids_enfants','paiement','commentaires'
     ]}
 
-    # 2) Validation champs nécessaires
+    # Validation minimum
     if not data['client_nom'] or not data['client_email']:
         flash("Erreur : données de réservation incomplètes.", "danger")
         return redirect(url_for('main.reservation_page', vehicule_id=vehicule_id))
 
-    # 3) Parsing datetime-local -> datetime
+    # Convertir date_heure (string) -> datetime (SQLite l'exige)
     dt = parse_datetime_local(data.get('date_heure'))
     if not dt:
         flash("Format de date/heure invalide. Utilisez le sélecteur de date et d'heure.", "danger")
         return redirect(url_for('main.reservation_page', vehicule_id=vehicule_id))
 
-    # 4) Conversions numériques sûres
+    # Conversions numériques
     nb_passagers    = to_int(data.get('nb_passagers'), default=1)
     nb_v23          = to_int(data.get('nb_valises_23kg'), default=0)
     nb_v10          = to_int(data.get('nb_valises_10kg'), default=0)
     nb_sieges_bebe  = to_int(data.get('nb_sieges_bebe'), default=0)
+    poids_enfants   = (data.get('poids_enfants') or '').strip() or None  # modèle = String(100)
 
-    # 🔸 IMPORTANT: poids_enfants est un String(100) dans ton modèle
-    poids_enfants_str = (data.get('poids_enfants') or '').strip() or None
-
-    # 5) Création + commit
+    # Création + commit
     try:
         r = Reservation(
             vehicule_id=vehicule_id,
             client_nom=(data.get('client_nom') or '').strip(),
             client_email=(data.get('client_email') or '').strip(),
             client_telephone=(data.get('client_telephone') or '').strip(),
-            date_heure=dt,  # objet datetime requis
+            date_heure=dt,
             vol_info=(data.get('vol_info') or '').strip(),
             adresse_depart=(data.get('adresse_depart') or '').strip(),
             adresse_arrivee=(data.get('adresse_arrivee') or '').strip(),
@@ -286,10 +282,10 @@ def reserver_vehicule(vehicule_id):
             nb_valises_23kg=nb_v23,
             nb_valises_10kg=nb_v10,
             nb_sieges_bebe=nb_sieges_bebe,
-            poids_enfants=poids_enfants_str,  # ← string ou None
+            poids_enfants=poids_enfants,
             paiement=(data.get('paiement') or '').strip(),
             commentaires=(data.get('commentaires') or '').strip(),
-            statut='En attente'  # ← correspond au défaut du modèle
+            statut='En attente'
         )
         db.session.add(r)
         db.session.commit()
@@ -298,7 +294,7 @@ def reserver_vehicule(vehicule_id):
         flash("Une erreur est survenue lors de l'enregistrement. Réessayez.", "danger")
         return redirect(url_for('main.reservation_page', vehicule_id=vehicule_id))
 
-    # 6) Emails
+    # Email admin
     try:
         msg = Message(
             subject="Nouvelle réservation - DS Travel",
@@ -328,6 +324,7 @@ Commentaires : {r.commentaires or '-'}
         current_app.logger.error(f"Erreur email admin : {e}")
         flash("Réservation enregistrée mais l'e-mail n'a pas pu être envoyé à l'admin.", "warning")
 
+    # Email client
     try:
         msg_client = Message(
             subject="Confirmation de votre réservation - DS Travel",
@@ -351,7 +348,7 @@ Nous vous recontacterons pour confirmer votre réservation.
         current_app.logger.error(f"Erreur email client : {e}")
         flash("Réservation enregistrée mais l'e-mail de confirmation n'a pas pu être envoyé au client.", "warning")
 
-    # Normalisation pour l'affichage
+    # Normalisation pour affichage sur la même page
     data['date_heure'] = r.date_heure.strftime('%Y-%m-%d %H:%M')
     data['nb_passagers'] = str(r.nb_passagers)
     data['nb_valises_23kg'] = str(r.nb_valises_23kg or 0)
@@ -361,6 +358,11 @@ Nous vous recontacterons pour confirmer votre réservation.
 
     flash("Réservation enregistrée, nous vous contacterons.", "success")
     return render_template('fiche_vehicule.html', vehicule=v, data=data, form=ReservationForm())
+
+# GET “pare-chocs”: si quelqu’un ouvre l’URL à la main
+@main.route('/reserver/<int:vehicule_id>', methods=['GET'])
+def reserver_vehicule_get(vehicule_id):
+    return redirect(url_for('main.reservation_page', vehicule_id=vehicule_id))
 
 # ------------------------
 # Administration des réservations
@@ -394,7 +396,6 @@ def annuler_reservation(id):
 @main.route('/admin/reservation/edit/<int:id>', methods=['GET', 'POST'])
 @admin_required
 def edit_reservation(id):
-    # TODO: Implémenter le formulaire d'édition
     flash("Page de modification à implémenter.", "info")
     return redirect(url_for('main.reservations_admin'))
 
@@ -560,6 +561,9 @@ def estimation_trajet():
                            depart=depart, arrivee=arrivee,
                            distance_km=distance_km, temps_min=temps_min, tarif=tarif)
 
+# ------------------------
+# Calcul AJAX (JSON)
+# ------------------------
 @main.route('/calculer_tarif', methods=['POST'])
 def calculer_tarif():
     data = request.get_json() or {}
@@ -608,6 +612,10 @@ def calculer_tarif():
         'temps_min': temps_min,
         'tarif': f"{prix:,.0f} F CFA"
     })
+
+# ------------------------
+# Debug routes
+# ------------------------
 @main.route("/debug/routes")
 def debug_routes():
     lines = []
