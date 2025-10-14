@@ -608,3 +608,10 @@ def calculer_tarif():
         'temps_min': temps_min,
         'tarif': f"{prix:,.0f} F CFA"
     })
+@main.route("/debug/routes")
+def debug_routes():
+    lines = []
+    for rule in current_app.url_map.iter_rules():
+        methods = ",".join(sorted(rule.methods))
+        lines.append(f"{methods:20s} {rule.endpoint:30s} {rule.rule}")
+    return "<pre>" + "\n".join(sorted(lines)) + "</pre>"
