@@ -262,13 +262,14 @@ def reserver_vehicule(vehicule_id):
         flash("Format de date/heure invalide. Utilisez le sélecteur de date et d'heure.", "danger")
         return redirect(url_for('main.reservation_page', vehicule_id=vehicule_id))
 
-    # 4) Conversions numériques sûres (évite '' dans des Integer)
+    # 4) Conversions numériques sûres
     nb_passagers    = to_int(data.get('nb_passagers'), default=1)
     nb_v23          = to_int(data.get('nb_valises_23kg'), default=0)
     nb_v10          = to_int(data.get('nb_valises_10kg'), default=0)
     nb_sieges_bebe  = to_int(data.get('nb_sieges_bebe'), default=0)
-    # Si votre modèle définit poids_enfants comme Integer, laissez default=None pour autoriser NULL
-    poids_enfants   = to_int(data.get('poids_enfants'), default=None)
+
+    # 🔸 IMPORTANT: poids_enfants est un String(100) dans ton modèle
+    poids_enfants_str = (data.get('poids_enfants') or '').strip() or None
 
     # 5) Création + commit
     try:
@@ -277,7 +278,7 @@ def reserver_vehicule(vehicule_id):
             client_nom=(data.get('client_nom') or '').strip(),
             client_email=(data.get('client_email') or '').strip(),
             client_telephone=(data.get('client_telephone') or '').strip(),
-            date_heure=dt,  # objet datetime requis par SQLAlchemy/SQLite
+            date_heure=dt,  # objet datetime requis
             vol_info=(data.get('vol_info') or '').strip(),
             adresse_depart=(data.get('adresse_depart') or '').strip(),
             adresse_arrivee=(data.get('adresse_arrivee') or '').strip(),
@@ -285,10 +286,10 @@ def reserver_vehicule(vehicule_id):
             nb_valises_23kg=nb_v23,
             nb_valises_10kg=nb_v10,
             nb_sieges_bebe=nb_sieges_bebe,
-            poids_enfants=poids_enfants,
+            poids_enfants=poids_enfants_str,  # ← string ou None
             paiement=(data.get('paiement') or '').strip(),
             commentaires=(data.get('commentaires') or '').strip(),
-            statut='en_attente'
+            statut='En attente'  # ← correspond au défaut du modèle
         )
         db.session.add(r)
         db.session.commit()
@@ -318,7 +319,7 @@ Nombre de passagers : {r.nb_passagers}
 Valises 23 kg : {r.nb_valises_23kg or 0}
 Valises 10 kg : {r.nb_valises_10kg or 0}
 Sièges bébé : {r.nb_sieges_bebe or 0}
-Poids enfants : {r.poids_enfants if r.poids_enfants is not None else '-'}
+Poids enfants : {r.poids_enfants or '-'}
 Paiement : {r.paiement}
 Commentaires : {r.commentaires or '-'}
 """
@@ -350,13 +351,13 @@ Nous vous recontacterons pour confirmer votre réservation.
         current_app.logger.error(f"Erreur email client : {e}")
         flash("Réservation enregistrée mais l'e-mail de confirmation n'a pas pu être envoyé au client.", "warning")
 
-    # Pour la page de récap, on réutilise 'data' mais avec valeurs normalisées/formatées
+    # Normalisation pour l'affichage
     data['date_heure'] = r.date_heure.strftime('%Y-%m-%d %H:%M')
     data['nb_passagers'] = str(r.nb_passagers)
     data['nb_valises_23kg'] = str(r.nb_valises_23kg or 0)
     data['nb_valises_10kg'] = str(r.nb_valises_10kg or 0)
     data['nb_sieges_bebe'] = str(r.nb_sieges_bebe or 0)
-    data['poids_enfants'] = '-' if r.poids_enfants is None else str(r.poids_enfants)
+    data['poids_enfants'] = r.poids_enfants or '-'
 
     flash("Réservation enregistrée, nous vous contacterons.", "success")
     return render_template('fiche_vehicule.html', vehicule=v, data=data, form=ReservationForm())
