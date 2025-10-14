@@ -20,6 +20,45 @@ from app.models.models import Vehicule, Reservation, TarifForfait, TarifRegle
 main = Blueprint('main', __name__)
 
 # ------------------------
+# Helpers
+# ------------------------
+def to_int(value, default=None):
+    """Convertit en int; renvoie default si vide/non convertible."""
+    if value is None:
+        return default
+    s = str(value).strip()
+    if s == "":
+        return default
+    try:
+        return int(s)
+    except (TypeError, ValueError):
+        return default
+
+def parse_datetime_local(value: str):
+    """
+    Parse un input HTML5 type 'datetime-local'.
+    Exemples acceptés: '2025-10-14T23:51' ou variantes ISO.
+    """
+    if not value:
+        return None
+    s = value.strip()
+    # Format standard datetime-local (sans secondes)
+    try:
+        return datetime.strptime(s, '%Y-%m-%dT%H:%M')
+    except ValueError:
+        pass
+    # Variante avec secondes
+    try:
+        return datetime.strptime(s, '%Y-%m-%dT%H:%M:%S')
+    except ValueError:
+        pass
+    # Dernière chance: fromisoformat (gère microsecondes, etc.)
+    try:
+        return datetime.fromisoformat(s)
+    except Exception:
+        return None
+
+# ------------------------
 # Utilitaire Google Distance Matrix
 # ------------------------
 def get_distance_and_time(depart, arrivee):
@@ -50,7 +89,6 @@ def admin_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
         if not session.get('admin_logged_in'):
-            # redirige vers login avec next
             return redirect(url_for('main.login', next=request.path))
         return f(*args, **kwargs)
     return wrapper
@@ -205,36 +243,61 @@ def reservation_recap(vehicule_id):
 @main.route('/reserver/<int:vehicule_id>', methods=['POST'])
 def reserver_vehicule(vehicule_id):
     v = Vehicule.query.get_or_404(vehicule_id)
+
+    # 1) Collecte brute
     data = {k: request.form.get(k) for k in [
         'client_nom','client_email','client_telephone','date_heure','vol_info',
         'adresse_depart','adresse_arrivee','nb_passagers','nb_valises_23kg',
         'nb_valises_10kg','nb_sieges_bebe','poids_enfants','paiement','commentaires'
     ]}
+
+    # 2) Validation champs nécessaires
     if not data['client_nom'] or not data['client_email']:
         flash("Erreur : données de réservation incomplètes.", "danger")
         return redirect(url_for('main.reservation_page', vehicule_id=vehicule_id))
 
-    r = Reservation(
-        vehicule_id=vehicule_id,
-        client_nom=data['client_nom'],
-        client_email=data['client_email'],
-        client_telephone=data['client_telephone'],
-        date_heure=data['date_heure'],
-        vol_info=data['vol_info'],
-        adresse_depart=data['adresse_depart'],
-        adresse_arrivee=data['adresse_arrivee'],
-        nb_passagers=data['nb_passagers'],
-        nb_valises_23kg=data['nb_valises_23kg'],
-        nb_valises_10kg=data['nb_valises_10kg'],
-        nb_sieges_bebe=data['nb_sieges_bebe'],
-        poids_enfants=data['poids_enfants'],
-        paiement=data['paiement'],
-        commentaires=data['commentaires']
-    )
-    db.session.add(r)
-    db.session.commit()
+    # 3) Parsing datetime-local -> datetime
+    dt = parse_datetime_local(data.get('date_heure'))
+    if not dt:
+        flash("Format de date/heure invalide. Utilisez le sélecteur de date et d'heure.", "danger")
+        return redirect(url_for('main.reservation_page', vehicule_id=vehicule_id))
 
-    # Email admin
+    # 4) Conversions numériques sûres (évite '' dans des Integer)
+    nb_passagers    = to_int(data.get('nb_passagers'), default=1)
+    nb_v23          = to_int(data.get('nb_valises_23kg'), default=0)
+    nb_v10          = to_int(data.get('nb_valises_10kg'), default=0)
+    nb_sieges_bebe  = to_int(data.get('nb_sieges_bebe'), default=0)
+    # Si votre modèle définit poids_enfants comme Integer, laissez default=None pour autoriser NULL
+    poids_enfants   = to_int(data.get('poids_enfants'), default=None)
+
+    # 5) Création + commit
+    try:
+        r = Reservation(
+            vehicule_id=vehicule_id,
+            client_nom=(data.get('client_nom') or '').strip(),
+            client_email=(data.get('client_email') or '').strip(),
+            client_telephone=(data.get('client_telephone') or '').strip(),
+            date_heure=dt,  # objet datetime requis par SQLAlchemy/SQLite
+            vol_info=(data.get('vol_info') or '').strip(),
+            adresse_depart=(data.get('adresse_depart') or '').strip(),
+            adresse_arrivee=(data.get('adresse_arrivee') or '').strip(),
+            nb_passagers=nb_passagers,
+            nb_valises_23kg=nb_v23,
+            nb_valises_10kg=nb_v10,
+            nb_sieges_bebe=nb_sieges_bebe,
+            poids_enfants=poids_enfants,
+            paiement=(data.get('paiement') or '').strip(),
+            commentaires=(data.get('commentaires') or '').strip(),
+            statut='en_attente'
+        )
+        db.session.add(r)
+        db.session.commit()
+    except Exception as e:
+        current_app.logger.exception(f"Erreur DB réservation: {e}")
+        flash("Une erreur est survenue lors de l'enregistrement. Réessayez.", "danger")
+        return redirect(url_for('main.reservation_page', vehicule_id=vehicule_id))
+
+    # 6) Emails
     try:
         msg = Message(
             subject="Nouvelle réservation - DS Travel",
@@ -244,41 +307,40 @@ def reserver_vehicule(vehicule_id):
         msg.body = f"""
 Nouvelle réservation pour le véhicule {v.marque} {v.modele}
 
-Nom : {data['client_nom']}
-Email : {data['client_email']}
-Téléphone : {data['client_telephone']}
-Départ : {data['adresse_depart']}
-Arrivée : {data['adresse_arrivee']}
-Date & Heure : {data['date_heure']}
-Numéro de vol/train : {data['vol_info'] or '-'}
-Nombre de passagers : {data['nb_passagers']}
-Valises 23 kg : {data['nb_valises_23kg'] or 0}
-Valises 10 kg : {data['nb_valises_10kg'] or 0}
-Sièges bébé : {data['nb_sieges_bebe'] or 0}
-Poids enfants : {data['poids_enfants'] or '-'}
-Paiement : {data['paiement']}
-Commentaires : {data['commentaires'] or '-'}
+Nom : {r.client_nom}
+Email : {r.client_email}
+Téléphone : {r.client_telephone}
+Départ : {r.adresse_depart}
+Arrivée : {r.adresse_arrivee}
+Date & Heure : {r.date_heure.strftime('%Y-%m-%d %H:%M')}
+Numéro de vol/train : {r.vol_info or '-'}
+Nombre de passagers : {r.nb_passagers}
+Valises 23 kg : {r.nb_valises_23kg or 0}
+Valises 10 kg : {r.nb_valises_10kg or 0}
+Sièges bébé : {r.nb_sieges_bebe or 0}
+Poids enfants : {r.poids_enfants if r.poids_enfants is not None else '-'}
+Paiement : {r.paiement}
+Commentaires : {r.commentaires or '-'}
 """
         mail.send(msg)
     except Exception as e:
         current_app.logger.error(f"Erreur email admin : {e}")
         flash("Réservation enregistrée mais l'e-mail n'a pas pu être envoyé à l'admin.", "warning")
 
-    # Email client
     try:
         msg_client = Message(
             subject="Confirmation de votre réservation - DS Travel",
             sender=current_app.config.get('MAIL_DEFAULT_SENDER'),
-            recipients=[data['client_email']]
+            recipients=[r.client_email]
         )
         msg_client.body = f"""
-Bonjour {data['client_nom']},
+Bonjour {r.client_nom},
 
 Nous confirmons la réception de votre réservation pour le véhicule {v.marque} {v.modele}.
 
-Départ : {data['adresse_depart']}
-Arrivée : {data['adresse_arrivee']}
-Date & Heure : {data['date_heure']}
+Départ : {r.adresse_depart}
+Arrivée : {r.adresse_arrivee}
+Date & Heure : {r.date_heure.strftime('%Y-%m-%d %H:%M')}
 
 Merci d’avoir choisi DS Travel.
 Nous vous recontacterons pour confirmer votre réservation.
@@ -287,6 +349,14 @@ Nous vous recontacterons pour confirmer votre réservation.
     except Exception as e:
         current_app.logger.error(f"Erreur email client : {e}")
         flash("Réservation enregistrée mais l'e-mail de confirmation n'a pas pu être envoyé au client.", "warning")
+
+    # Pour la page de récap, on réutilise 'data' mais avec valeurs normalisées/formatées
+    data['date_heure'] = r.date_heure.strftime('%Y-%m-%d %H:%M')
+    data['nb_passagers'] = str(r.nb_passagers)
+    data['nb_valises_23kg'] = str(r.nb_valises_23kg or 0)
+    data['nb_valises_10kg'] = str(r.nb_valises_10kg or 0)
+    data['nb_sieges_bebe'] = str(r.nb_sieges_bebe or 0)
+    data['poids_enfants'] = '-' if r.poids_enfants is None else str(r.poids_enfants)
 
     flash("Réservation enregistrée, nous vous contacterons.", "success")
     return render_template('fiche_vehicule.html', vehicule=v, data=data, form=ReservationForm())
@@ -436,7 +506,7 @@ def toggle_tarif_regle(id):
     return redirect(url_for('main.tarifs_admin'))
 
 # ------------------------
-# Estimation de trajet (formulaire supprimé du home mais endpoints conservés)
+# Estimation de trajet
 # ------------------------
 @main.route('/estimation', methods=['POST'])
 def estimation_trajet():
