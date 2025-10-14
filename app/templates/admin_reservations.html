@@ -1,0 +1,108 @@
+{% extends "layout.html" %}
+
+{% block title %}Gestion des Réservations{% endblock %}
+
+{% block content %}
+
+<div class="dashboard-container d-flex">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>Tableau de bord</h2>
+        <div class="menu-item active" onclick="window.location.href='{{ url_for('main.reservations_admin') }}'">
+            Réservations
+        </div>
+        <div class="menu-item" onclick="window.location.href='{{ url_for('main.admin_dashboard') }}'">
+            Véhicules
+        </div>
+        <div class="menu-item">Clients</div>
+    </div>
+
+    <!-- Contenu principal -->
+    <div class="container mt-4">
+        <h2 class="mb-4">Liste des Réservations</h2>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <table class="table table-bordered table-hover table-striped align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>Client</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Véhicule</th>
+                    <th>Date & Heure</th>
+                    <th>Départ</th>
+                    <th>Arrivée</th>
+                    <th>Passagers</th>
+                    <th>Bagages</th>
+                    <th>Vol</th>
+                    <th>Statut</th>
+                    <th style="min-width:220px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reservations %}
+                <tr>
+
+                    <td>{{ r.client_nom }}</td>
+                    <td>{{ r.client_telephone }}</td>
+                    <td>{{ r.client_email }}</td>
+                    <td>{{ r.vehicule.marque }} {{ r.vehicule.modele }}</td>
+                    <td>{{ r.date_heure.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>{{ r.adresse_depart }}</td>
+                    <td>{{ r.adresse_arrivee }}</td>
+                    <td>{{ r.nb_passagers }}</td>
+                    <td>{{ r.nb_valises_23kg }} x 23kg, {{ r.nb_valises_10kg }} x 10kg</td>
+                    <td>{{ r.vol_info or "N/A" }}</td>
+                    <td>
+                        {% if r.statut == 'Confirmée' %}
+                            <span class="badge bg-success">Confirmée</span>
+                        {% elif r.statut == 'Terminée' %}
+                            <span class="badge bg-primary">Terminée</span>
+                        {% elif r.statut == 'Annulée' %}
+                            <span class="badge bg-danger">Annulée</span>
+                        {% else %}
+                            <span class="badge bg-warning text-dark">En attente</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if r.statut == 'En attente' %}
+                            <a href="{{ url_for('main.valider_reservation', id=r.id) }}" class="btn btn-success btn-sm me-1">Valider</a>
+                            <a href="{{ url_for('main.edit_reservation', id=r.id) }}" class="btn btn-info btn-sm me-1">Modifier</a>
+                            <a href="{{ url_for('main.annuler_reservation', id=r.id) }}" class="btn btn-warning btn-sm me-1">Annuler</a>
+                            <a href="{{ url_for('main.delete_reservation', id=r.id) }}" class="btn btn-outline-danger btn-sm me-1"
+                               onclick="return confirm('Supprimer définitivement ?')">Supprimer</a>
+
+                        {% elif r.statut == 'Confirmée' %}
+                            <a href="{{ url_for('main.terminer_reservation', id=r.id) }}" class="btn btn-success btn-sm me-1">Terminer</a>
+                            <a href="{{ url_for('main.edit_reservation', id=r.id) }}" class="btn btn-info btn-sm me-1">Modifier</a>
+                            <a href="{{ url_for('main.annuler_reservation', id=r.id) }}" class="btn btn-warning btn-sm me-1">Annuler</a>
+                            <a href="{{ url_for('main.delete_reservation', id=r.id) }}" class="btn btn-outline-danger btn-sm me-1"
+                               onclick="return confirm('Supprimer définitivement ?')">Supprimer</a>
+
+                        {% elif r.statut == 'Terminée' %}
+                            <a href="{{ url_for('main.delete_reservation', id=r.id) }}" class="btn btn-outline-danger btn-sm me-1"
+                               onclick="return confirm('Supprimer définitivement ?')">Supprimer</a>
+
+                        {% elif r.statut == 'Annulée' %}
+                            <a href="{{ url_for('main.delete_reservation', id=r.id) }}" class="btn btn-outline-danger btn-sm me-1"
+                               onclick="return confirm('Supprimer définitivement ?')">Supprimer</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

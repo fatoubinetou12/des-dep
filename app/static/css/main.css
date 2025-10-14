@@ -1,0 +1,44 @@
+/* Bannière plein écran uniquement sur home */
+body#home-page .fullscreen-banner {
+  background: url('/static/images/ba.jpg') center/cover no-repeat;
+  height: 100vh;
+  position: relative;
+}
+body#home-page .fullscreen-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+body#home-page .fullscreen-banner > div {
+  position: relative;
+  z-index: 1;
+}
+
+/* Sections spécifiques home */
+body#home-page .prestations .card-prestation {
+  border-radius: 12px;
+  transition: transform 0.3s ease;
+}
+body#home-page .prestations .card-prestation:hover {
+  transform: translateY(-5px);
+}
+
+/* Bouton WhatsApp flottant */
+body#home-page .whatsapp-float {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #25D366;
+  color: white;
+  border-radius: 50%;
+  padding: 16px;
+  font-size: 28px;
+  z-index: 1000;
+  text-decoration: none;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+body#home-page .whatsapp-float:hover {
+  background-color: #1ebe5c;
+  transform: scale(1.1);
+}

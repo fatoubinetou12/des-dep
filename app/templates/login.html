@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block title %}Connexion Admin{% endblock %}
+
+{% block content %}
+<section class="Form my-2 mx-5">
+    <div class="container">
+        <div class="row no-gutters">
+            <div class="col-lg-5">
+                <img src="{{ url_for('static', filename='images/car.jpg') }}" class="img-fluid" alt="des voitures">
+            </div>
+            <div class="col-lg-7 px-5 pt-5">
+                <h1 class="font-weight-bold py-3">Admin</h1>
+                <h4>Connectez-vous à votre compte</h4>
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                  {% if messages %}
+                    {% for category, message in messages %}
+                      <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                  {% endif %}
+                {% endwith %}
+
+                <form method="POST" action="{{ url_for('main.login') }}">
+                    {{ form.hidden_tag() }}  <!-- CSRF token obligatoire -->
+
+                    <div class="form-row">
+                        <div class="col-lg-7">
+                            {{ form.username(class="form-control my-3 p-4", placeholder="Nom d'utilisateur") }}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-lg-7">
+                            {{ form.password(class="form-control my-3 p-4", placeholder="Mot de passe") }}
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="col-lg-7">
+                            {{ form.submit(class="btn1 mt-3 mb-5") }}
+                        </div>
+                    </div>
+
+
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

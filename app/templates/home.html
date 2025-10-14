@@ -1,0 +1,453 @@
+{% extends "layout.html" %}
+{% block title %}Accueil{% endblock %}
+
+{% block content %}
+<!-- ======== Bannière avec estimation ======== -->
+<section class="text-white fullscreen-banner">
+  <!-- Image en arrière-plan -->
+  <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70"
+       alt="voiture de luxe"
+       style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+
+  <!-- Filtre sombre -->
+  <div style="position: absolute; inset: 0; background-color: rgba(0, 0, 0, 0.6); z-index: 2;"></div>
+
+  <!-- Contenu centré -->
+  <div class="d-flex flex-column justify-content-center align-items-center text-center"
+       style="position: relative; z-index: 3; height: 100%; padding-top: 80px;">
+    <h1 class="display-3 fw-bold mb-3 animate__animated animate__fadeInDown">
+      Voyagez avec style et sérénité
+    </h1>
+    <p class="lead mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+      Service VTC premium à Dakar et vers l'aéroport AIBD
+    </p>
+
+   <!-- ✅ Bouton Réserver -->
+<div class="bg-dark bg-opacity-75 p-4 rounded">
+  <a href="#notre-flotte" class="btn btn-warning btn-lg px-5 fw-bold">
+    Réserver maintenant
+  </a>
+</div>
+
+  </div>
+</section>
+
+<!-- ======== Sections existantes ======== -->
+<div class="container text-center py-5 px-3"></div>
+<div class="container text-center py-5">
+  <!-- ======= Pourquoi choisir DS TRAVEL ======= -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-4 fw-bold">
+      Pourquoi choisir <span class="text-success">DS TRAVEL</span> ?
+    </h2>
+    <p class="text-center mb-5 lead">
+      Forts de notre expérience, nous garantissons un service de qualité,
+      alliant ponctualité, sécurité et confort. Notre priorité est votre satisfaction.
+    </p>
+
+    <div class="row g-5 text-center">
+      <!-- Services principaux -->
+      <div class="col-md-4">
+        <h4 class="text-success mb-4">Services principaux</h4>
+
+        <div class="mb-4">
+          <div class="text-warning fs-2 mb-2"><i class="bi bi-airplane"></i></div>
+          <h5>Transferts aéroports et gares</h5>
+          <p>Réservez votre chauffeur pour l’aéroport AIBD ou tout déplacement longue distance.</p>
+        </div>
+
+        <div class="mb-4">
+          <div class="text-warning fs-2 mb-2"><i class="bi bi-signpost-split"></i></div>
+          <h5>Trajets longue distance</h5>
+          <p>Déplacements dans tout le Sénégal, même vers les villes les plus éloignées.</p>
+        </div>
+
+        <div>
+          <div class="text-warning fs-2 mb-2"><i class="bi bi-briefcase"></i></div>
+          <h5>Déplacements professionnels</h5>
+          <p>Idéal pour vos rendez-vous d’affaires, congrès et événements officiels.</p>
+        </div>
+      </div>
+
+      <!-- Valeurs clés -->
+      <div class="col-md-4">
+        <h4 class="text-success mb-4">Nos valeurs</h4>
+
+        <div class="mb-4">
+          <div class="text-warning fs-2 mb-2"><i class="bi bi-clock-history"></i></div>
+          <h5>Ponctualité</h5>
+          <p>Des chauffeurs toujours à l’heure pour vos déplacements importants.</p>
+        </div>
+
+        <div class="mb-4">
+          <div class="text-warning fs-2 mb-2"><i class="bi bi-heart"></i></div>
+          <h5>Service personnalisé</h5>
+          <p>Nous adaptons chaque trajet à vos besoins spécifiques.</p>
+        </div>
+
+        <div>
+          <div class="text-warning fs-2 mb-2"><i class="bi bi-chat-dots"></i></div>
+          <h5>Assistance 24/7</h5>
+          <p>Un support permanent pour vos réservations et questions.</p>
+        </div>
+      </div>
+
+      <!-- Engagements -->
+      <div class="col-md-4">
+        <h4 class="text-success mb-4">Nos engagements</h4>
+
+        <div class="mb-4">
+          <div class="text-warning fs-2 mb-2"><i class="bi bi-cash-coin"></i></div>
+          <h5>Tarifs clairs et fixes</h5>
+          <p>Le prix est convenu à l’avance, sans frais cachés.</p>
+        </div>
+
+        <div class="mb-4">
+          <div class="text-warning fs-2 mb-2"><i class="bi bi-shield-lock"></i></div>
+          <h5>Sécurité</h5>
+          <p>Chauffeurs professionnels, véhicules vérifiés et assurés.</p>
+        </div>
+
+        <div>
+          <div class="text-warning fs-2 mb-2"><i class="bi bi-cloud-sun"></i></div>
+          <h5>Confort optimal</h5>
+          <p>Véhicules récents, climatisés, pour un trajet agréable.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<div class="container text-center py-5">
+<section class="prestations">
+  <div class="container">
+   <h2 class="mb-4 text-center">NOS PRESTATIONS</h2>
+    <div class="row g-4">
+      <div class="col-md-6">
+        <div class="card-prestation">
+          <div class="card-prestation-body">
+            <h4 class="title">Aéroports</h4>
+            <p class="text">Attente avec pancarte à votre nom.</p>
+          </div>
+          <div class="card-prestation-img">
+            <img src="{{ url_for('static', filename='images/airoport.jpg') }}" alt="Aéroport">
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-prestation">
+          <div class="card-prestation-body">
+            <h4 class="title">Hôtels</h4>
+            <p class="text">Prise en charge directement à la réception.</p>
+          </div>
+          <div class="card-prestation-img">
+            <img src="{{ url_for('static', filename='images/hot.jpg') }}" alt="Hôtels">
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-prestation">
+          <div class="card-prestation-body">
+            <h4 class="title">Longue distance</h4>
+            <p class="text">Dakar / Ziguinchor</p>
+          </div>
+          <div class="card-prestation-img">
+            <img src="{{ url_for('static', filename='images/ldistance.jpg') }}" alt="Longue distance">
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card-prestation">
+          <div class="card-prestation-body">
+            <h4 class="title">Professionnel</h4>
+            <p class="text">RDV d’affaires / Congrès</p>
+          </div>
+          <div class="card-prestation-img">
+            <img src="{{ url_for('static', filename='images/taxii.jpg') }}" alt="Professionnel">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.card-prestation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #dce3ec;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  transition: all 0.3s ease;
+}
+.card-prestation:hover { box-shadow: 0px 8px 20px rgba(0,0,0,0.1); }
+.card-prestation-body { padding: 20px; flex: 1; }
+.card-prestation-body .title { color: #2a9d55; font-weight: 600; margin-bottom: 10px; }
+.card-prestation-body .text { font-size: 15px; color: #333; }
+.card-prestation-img img {
+  width: 200px; height:150px; object-fit: cover; border-left:1px solid #eee;
+}
+</style>
+
+<!-- Véhicules populaires -->
+<!-- ======= Notre flotte de véhicules ======= -->
+<section class="container py-5" id="notre-flotte">
+
+  <h2 class="text-center mb-4">Notre flotte de véhicules</h2>
+  <p class="text-center mb-5 lead">
+    Des véhicules récents, confortables et parfaitement entretenus pour répondre à tous vos besoins.
+  </p>
+
+  <div class="row justify-content-center">
+  {% for vehicule in vehicules[:6] %}
+  <div class="col-md-4 mb-4">
+    <div class="card shadow-sm h-100 border-0 rounded-3">
+      <!-- Photo du véhicule -->
+      <img src="{{ url_for('static', filename=vehicule.image) }}"
+           class="card-img-top rounded-top"
+           alt="Photo de {{ vehicule.marque }} {{ vehicule.modele }}"
+           style="height:220px; object-fit:cover;">
+
+      <!-- Contenu de la carte -->
+      <div class="card-body">
+        <h4 class="card-title text-success mb-3">
+          {{ vehicule.marque }} {{ vehicule.modele }}
+        </h4>
+
+        <ul class="list-unstyled mb-4">
+          <li>
+            <i class="bi bi-people-fill text-warning me-2"></i>
+            <strong>Passagers :</strong> {{ vehicule.capacite_passagers }}
+          </li>
+          <li>
+            <i class="bi bi-suitcase text-warning me-2"></i>
+            <strong>Valises :</strong> {{ vehicule.nb_valises }}
+          </li>
+        </ul>
+
+        <div class="d-flex justify-content-between">
+          <!-- 🟢 Bouton Voir plus de détails -->
+          <button class="btn btn-outline-success w-50 me-2"
+                  data-bs-toggle="modal"
+                  data-bs-target="#vehiculeModal{{ vehicule.id }}">
+            Voir plus
+          </button>
+
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fenêtre modale pour les détails -->
+  <div class="modal fade" id="vehiculeModal{{ vehicule.id }}" tabindex="-1"
+       aria-labelledby="vehiculeModalLabel{{ vehicule.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="vehiculeModalLabel{{ vehicule.id }}">
+            {{ vehicule.marque }} {{ vehicule.modele }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white"
+                  data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <img src="{{ url_for('static', filename=vehicule.image) }}"
+                   class="img-fluid rounded"
+                   alt="photo {{ vehicule.marque }} {{ vehicule.modele }}">
+            </div>
+            <div class="col-md-6">
+              <ul class="list-unstyled">
+                <li><strong>Immatriculation :</strong> {{ vehicule.immatriculation }}</li>
+                <li><strong>Type :</strong> {{ vehicule.type }}</li>
+                <li><strong>Caractéristiques techniques :</strong> {{ vehicule.caracteristiques }}</li>
+                <li><strong>Passagers :</strong> {{ vehicule.capacite_passagers }}</li>
+                <li><strong>Valises :</strong> {{ vehicule.nb_valises }}</li>
+                <li><strong>Volume coffre (bagages) :</strong> {{ vehicule.volume_coffre_bagages }} L</li>
+                <li><strong>Volume coffre (sièges rabattus) :</strong> {{ vehicule.volume_coffre_sieges_rabattus }} L</li>
+                <li><strong>Sièges bébé :</strong> {{ vehicule.nb_sieges_bebe }}</li>
+                <li><strong>Coffre de toit :</strong>
+                    {% if vehicule.coffre_de_toit %}Oui{% else %}Non{% endif %}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary"
+                  data-bs-dismiss="modal">Fermer</button>
+         <a class="btn btn-success w-50"
+   href="{{ url_for('main.reservation_page', vehicule_id=vehicule.id) }}">
+   Réserver
+</a>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+
+</section>
+
+<!-- ======== Transferts Populaires ======== -->
+<section class="container my-5">
+  <h2 class="text-center mb-4 fw-bold text-success">Transferts Populaires</h2>
+  <div class="row g-4">
+    {% for t in transferts_populaires %}
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="card text-white h-100 border-0 popular-card">
+        <div class="card-body text-center">
+          <h5 class="card-title fw-bold">
+            {{ t.depart }} <br>
+            ⇄ <br>
+            {{ t.arrivee }}
+          </h5>
+          <p class="card-text mt-3">
+            à partir de {{ '{:,.0f}'.format(t.prix_cfa) }} FCFA
+          </p>
+          {% if t.distance_km %}
+          <p class="mb-1 small">Distance : {{ t.distance_km }} km</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<style>
+.popular-card {
+  background-color: #006400; /* vert foncé */
+  border-radius: 10px;
+  transition: transform .2s ease-in-out;
+}
+.popular-card:hover {
+  transform: scale(1.03);
+}
+</style>
+
+<!-- Témoignages -->
+<section class="bg-light py-5">
+    <div class="container text-center">
+        <h2 class="mb-4">Témoignages clients</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="bg-white shadow rounded p-4">
+                    <p class="fst-italic">“Service exceptionnel ! Chauffeur ponctuel et très professionnel.”</p>
+                    <strong>- Amina D.</strong>
+                </div>
+            </div>
+            <div class="col-md-5 mt-4 mt-md-0">
+                <div class="bg-white shadow rounded p-4">
+                    <p class="fst-italic">“Voiture impeccable et réservation ultra facile. Merci !”</p>
+                    <strong>- Moussa K.</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======== Section Transferts Clés ======== -->
+<section class="transferts-section text-white d-flex align-items-center" style="position: relative; min-height:100vh;">
+
+  <!-- Image de fond -->
+  <img src="{{ url_for('static', filename='images/ba.jpg') }}"
+       alt="Transferts Sénégal"
+       style="position: absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:1;">
+
+  <!-- Filtre sombre -->
+  <div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); z-index:2;"></div>
+
+  <div class="container position-relative" style="z-index:3;">
+    <h2 class="fw-bold">Transferts</h2>
+    <h3 class="text-warning mb-4">Aéroport, Villes et Gares du Sénégal</h3>
+    <p class="mb-5 lead">
+      Avec DS Travel, profitez d’un service fiable et confortable à travers tout le Sénégal.
+      Que ce soit pour vos trajets depuis l’aéroport AIBD, vos déplacements vers les grandes villes,
+      ou vos voyages vers les parcs touristiques, nous vous garantissons ponctualité et sécurité.
+    </p>
+
+    <h4 class="fw-bold mb-4">Nos Transferts Clés</h4>
+    <div class="row text-center">
+      <div class="col-md-3 mb-3">
+        <div class="p-3 bg-dark bg-opacity-50 rounded">
+          <h3 class="text-warning">1</h3>
+          <p>Aéroport International AIBD</p>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="p-3 bg-dark bg-opacity-50 rounded">
+          <h3 class="text-warning">5+</h3>
+          <p>Parcs Touristiques</p>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="p-3 bg-dark bg-opacity-50 rounded">
+          <h3 class="text-warning">14</h3>
+          <p>Régions Desservies</p>
+        </div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="p-3 bg-dark bg-opacity-50 rounded">
+          <h3 class="text-warning">10+</h3>
+          <p>Gares Routières Principales</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ======== Google Places Autocomplete ======== -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBy8naZgWRwxtGy7lztqvaEhb0L6ODbJMs&libraries=places"></script>
+<script>
+function initAutocomplete() {
+  const depart = document.getElementById('depart');
+  const arrivee = document.getElementById('arrivee');
+  if (depart) new google.maps.places.Autocomplete(depart, { componentRestrictions: { country: "sn" }});
+  if (arrivee) new google.maps.places.Autocomplete(arrivee, { componentRestrictions: { country: "sn" }});
+}
+document.addEventListener('DOMContentLoaded', initAutocomplete);
+</script>
+    <!-- Bouton WhatsApp flottant -->
+<a href="https://wa.me/221778602582" class="whatsapp-float" target="_blank" aria-label="WhatsApp">
+  <i class="bi bi-whatsapp"></i>
+</a>
+
+<style>
+/* Bouton flottant WhatsApp */
+.whatsapp-float {
+  position: fixed;
+  bottom: 20px;          /* distance du bas */
+  right: 20px;           /* distance du bord droit */
+  background-color: #25D366;
+  color: white;
+  border-radius: 50%;
+  padding: 16px;
+  font-size: 28px;
+  z-index: 1000;         /* reste au-dessus de tout */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+.whatsapp-float:hover {
+  background-color: #1ebe5c;
+  transform: scale(1.1);
+}
+.whatsapp-float i {
+  vertical-align: middle;
+}
+</style>
+
+
+{% endblock %}

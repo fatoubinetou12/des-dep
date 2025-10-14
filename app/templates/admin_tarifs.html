@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+{% block title %}Gestion des Tarifs{% endblock %}
+{% block content %}
+
+<div class="dashboard-container d-flex">
+  <div class="sidebar">
+    <h2>Tableau de bord</h2>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('main.reservations_admin') }}'">Réservations</div>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('main.admin_dashboard') }}'">Véhicules</div>
+    <div class="menu-item active" onclick="window.location.href='{{ url_for('main.tarifs_admin') }}'">Tarifs</div>
+  </div>
+
+  <div class="container mt-4">
+    <h2 class="mb-4">Gestion des Tarifs</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="row">
+      <!-- === Formulaire tarif forfaitaire === -->
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5>Ajouter un tarif forfaitaire</h5>
+
+          {% if form_forfait.errors %}
+            <div class="alert alert-danger">
+              <strong>Erreurs dans le formulaire forfait :</strong>
+              <ul class="mb-0">
+                {% for field, errors in form_forfait.errors.items() %}
+                  <li><strong>{{ field }}</strong> : {{ errors|join(', ') }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <form method="POST">
+            {{ form_forfait.hidden_tag() }}
+            <input type="hidden" name="form_name" value="forfait">
+            <div class="mb-2">
+              {{ form_forfait.depart.label }}
+              {{ form_forfait.depart(class="form-control", id="depart") }}
+            </div>
+            <div class="mb-2">
+              {{ form_forfait.arrivee.label }}
+              {{ form_forfait.arrivee(class="form-control", id="arrivee") }}
+            </div>
+            <div class="mb-2">{{ form_forfait.prix_cfa.label }} {{ form_forfait.prix_cfa(class="form-control") }}</div>
+            <div class="mb-2">{{ form_forfait.distance_km.label }} {{ form_forfait.distance_km(class="form-control") }}</div>
+            <div class="form-check mb-2">{{ form_forfait.bidirectionnel(class="form-check-input") }} {{ form_forfait.bidirectionnel.label }}</div>
+            <div class="form-check mb-3">{{ form_forfait.actif(class="form-check-input") }} {{ form_forfait.actif.label }}</div>
+            {{ form_forfait.submit(class="btn btn-primary") }}
+          </form>
+        </div>
+      </div>
+
+      <!-- === Formulaire règle kilométrique === -->
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5>Ajouter une règle kilométrique</h5>
+
+          {% if form_regle.errors %}
+            <div class="alert alert-danger">
+              <strong>Erreurs dans le formulaire règle :</strong>
+              <ul class="mb-0">
+                {% for field, errors in form_regle.errors.items() %}
+                  <li><strong>{{ field }}</strong> : {{ errors|join(', ') }}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          {% endif %}
+
+          <form method="POST">
+            {{ form_regle.hidden_tag() }}
+            <input type="hidden" name="form_name" value="regle">
+            <div class="mb-2">{{ form_regle.base.label }} {{ form_regle.base(class="form-control") }}</div>
+            <div class="mb-2">{{ form_regle.prix_km.label }} {{ form_regle.prix_km(class="form-control") }}</div>
+            <div class="mb-2">{{ form_regle.minimum.label }} {{ form_regle.minimum(class="form-control") }}</div>
+            <div class="mb-2">{{ form_regle.coeff_nuit.label }} {{ form_regle.coeff_nuit(class="form-control", placeholder="1.0") }}</div>
+            <div class="mb-3">{{ form_regle.coeff_weekend.label }} {{ form_regle.coeff_weekend(class="form-control", placeholder="1.0") }}</div>
+            <div class="form-check mb-3">{{ form_regle.actif(class="form-check-input") }} {{ form_regle.actif.label }}</div>
+            {{ form_regle.submit(class="btn btn-primary") }}
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <hr class="my-4">
+
+    <!-- === Tableau des forfaits === -->
+    <h4>Forfaits existants</h4>
+    <table class="table table-striped">
+      <thead><tr><th>Trajet</th><th>Prix</th><th>Actif</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for t in forfaits %}
+          <tr>
+            <td>{{ t.depart }} → {{ t.arrivee }} {% if t.bidirectionnel %}(↔){% endif %}</td>
+            <td>{{ "{:,.0f}".format(t.prix_cfa).replace(",", " ") }} F</td>
+            <td>{% if t.actif %}<span class="badge bg-success">Actif</span>{% else %}<span class="badge bg-secondary">Inactif</span>{% endif %}</td>
+            <td>
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.toggle_tarif_forfait', id=t.id) }}">Activer/Désactiver</a>
+              <a class="btn btn-sm btn-outline-danger" href="{{ url_for('main.delete_tarif_forfait', id=t.id) }}" onclick="return confirm('Supprimer ce forfait ?')">Supprimer</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <!-- === Tableau des règles === -->
+    <h4 class="mt-4">Règles kilométriques</h4>
+    <table class="table table-striped">
+      <thead><tr><th>Base</th><th>Prix/km</th><th>Minimum</th><th>Nuit</th><th>Week-end</th><th>Actif</th><th>Actions</th></tr></thead>
+      <tbody>
+        {% for r in regles %}
+          <tr>
+            <td>{{ r.base }} F</td>
+            <td>{{ r.prix_km }} F</td>
+            <td>{{ r.minimum }} F</td>
+            <td>{{ r.coeff_nuit }}</td>
+            <td>{{ r.coeff_weekend }}</td>
+            <td>{% if r.actif %}<span class="badge bg-success">Actif</span>{% else %}<span class="badge bg-secondary">Inactif</span>{% endif %}</td>
+            <td>
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('main.toggle_tarif_regle', id=r.id) }}">Activer/Désactiver</a>
+              <a class="btn btn-sm btn-outline-danger" href="{{ url_for('main.delete_tarif_regle', id=r.id) }}" onclick="return confirm('Supprimer cette règle ?')">Supprimer</a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{# === Google Maps Places Autocomplete === #}
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBy8naZgWRwxtGy7lztqvaEhb0L6ODbJMs&libraries=places"></script>
+<script>
+function initAutocomplete() {
+  const departInput  = document.getElementById('depart');
+  const arriveeInput = document.getElementById('arrivee');
+
+  if (departInput) {
+    new google.maps.places.Autocomplete(departInput, {
+      types: ['geocode'],
+      componentRestrictions: { country: 'sn' } // Sénégal
+    });
+  }
+  if (arriveeInput) {
+    new google.maps.places.Autocomplete(arriveeInput, {
+      types: ['geocode'],
+      componentRestrictions: { country: 'sn' }
+    });
+  }
+}
+document.addEventListener('DOMContentLoaded', initAutocomplete);
+</script>
+
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<section class="container py-5">
+  <h1 class="mb-4">À propos de DS Travel</h1>
+  <p>
+    DS Travel est un service de transport privé haut de gamme, spécialisé dans la location de voitures avec chauffeur pour vos déplacements professionnels, personnels et touristiques.
+  </p>
+  <p>
+    Forts d’une expérience solide dans le domaine du transport de personnes, nous mettons un point d’honneur à offrir à nos clients ponctualité, confort, discrétion et sécurité.
+    Que vous ayez besoin d’un transfert vers l’aéroport, d’une mise à disposition pour la journée ou d’un trajet longue distance, notre équipe s’adapte à vos besoins.
+  </p>
+  <p>
+    Nos véhicules sont soigneusement entretenus et notre flotte comprend différents modèles adaptés à chaque type de déplacement : berlines élégantes, vans spacieux pour les groupes ou les familles, et véhicules de luxe pour les occasions spéciales.
+  </p>
+  <p>
+    Faites confiance à DS Travel pour transformer chacun de vos trajets en une véritable expérience de confort et de sérénité.
+  </p>
+
+  <h3 class="mt-5">Nos engagements</h3>
+  <ul>
+    <li>✅ Chauffeurs professionnels et expérimentés</li>
+    <li>✅ Véhicules confortables et bien entretenus</li>
+    <li>✅ Service ponctuel et disponible 7j/7</li>
+    <li>✅ Tarifs transparents et réservation en ligne</li>
+  </ul>
+
+  <p class="mt-4">
+    Pour toute demande spécifique ou devis personnalisé, <a href="{{ url_for('main.home') }}#contact">contactez-nous</a> directement.
+  </p>
+</section>
+{% endblock %}

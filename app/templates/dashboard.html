@@ -1,0 +1,195 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard - SD Travel{% endblock %}
+
+{% block content %}
+<div class="dashboard-container d-flex">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h2>Tableau de bord</h2>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('main.reservations_admin') }}'">Réservations</div>
+    <div class="menu-item active">Véhicules</div>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('main.tarifs_admin') }}'">Tarifs</div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content w-100 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3>Liste des véhicules</h3>
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vehicleModal" onclick="resetForm()">
+        + Nouveau véhicule
+      </button>
+    </div>
+
+    <!-- Tableau des véhicules -->
+    <table class="table table-bordered align-middle text-center">
+      <thead class="table-light">
+        <tr>
+          <th>Image</th>
+          <th>Immatriculation</th>
+          <th>Marque</th>
+          <th>Modèle</th>
+          <th>Caractéristiques techniques</th>
+          <th>Type</th>
+          <th>Capacité passagers</th>
+          <th>Volume coffre (bagages)</th>
+          <th>Volume coffre (sièges rabattus)</th>
+          <th>Sièges bébé</th>
+          <th>Nombre de valises</th>
+          <th>Coffre de toit</th>
+          <th>Détails coffre toit</th>
+          <th>Disponible</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for v in vehicules %}
+        <tr>
+          <td>
+            <img src="{{ url_for('static', filename=v.image or 'images/default_car.png') }}"
+                 class="vehicle-img" alt="Image" style="max-height:80px">
+          </td>
+          <td>{{ v.immatriculation }}</td>
+          <td>{{ v.marque }}</td>
+          <td>{{ v.modele }}</td>
+          <td>{{ v.caracteristiques_techniques or '-' }}</td>
+          <td>{{ v.type }}</td>
+          <td>{{ v.capacite_passagers }}</td>
+          <td>{{ v.volume_coffre_bagages or '-' }}</td>
+          <td>{{ v.volume_coffre_rabattus or '-' }}</td>
+          <td>{{ v.nb_sieges_bebe or 0 }}</td>
+          <td>{{ v.nb_valises or 0 }}</td>
+          <td>{{ 'Oui' if v.coffre_de_toit else 'Non' }}</td>
+          <td>{{ v.details_coffre_toit or '-' }}</td>
+          <td>
+            {% if v.disponible %}
+              <span class="badge bg-success">Oui</span>
+            {% else %}
+              <span class="badge bg-danger">Non</span>
+            {% endif %}
+          </td>
+          <td>
+            <button class="btn btn-outline-primary btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#vehicleModal"
+                    onclick="editVehicle('{{ v.id }}','{{ v.immatriculation }}','{{ v.marque }}','{{ v.modele }}',
+                                         '{{ v.caracteristiques_techniques|e }}','{{ v.type }}','{{ v.capacite_passagers }}',
+                                         '{{ v.volume_coffre_bagages or '' }}','{{ v.volume_coffre_rabattus or '' }}',
+                                         '{{ v.nb_sieges_bebe or 0 }}','{{ v.nb_valises or 0 }}',
+                                         '{{ v.coffre_de_toit }}','{{ v.details_coffre_toit or '' }}',
+                                         '{{ v.disponible }}','{{ v.image or '' }}')">
+              Modifier
+            </button>
+            <a href="{{ url_for('main.supprimer_vehicule') }}?id={{ v.id }}"
+               class="btn btn-outline-danger btn-sm"
+               onclick="return confirm('Supprimer ce véhicule ?')">
+              Supprimer
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal - Formulaire véhicule -->
+<div class="modal fade" id="vehicleModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="modalTitle">Ajouter un véhicule</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <form id="vehicleForm" method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+        <div class="modal-body">
+          <input type="hidden" id="vehicleId" name="vehicle_id">
+
+          <div class="row">
+            <div class="col-md-6">
+              {{ form.photo.label(class="form-label") }}
+              {{ form.photo(class="form-control") }}
+              <img id="vehicleImagePreview" src="" class="img-thumbnail mt-2" style="max-height:100px; display:none;">
+              {{ form.immatriculation.label(class="form-label mt-3") }}
+              {{ form.immatriculation(class="form-control", id="immatriculation") }}
+              {{ form.marque.label(class="form-label mt-3") }}
+              {{ form.marque(class="form-control", id="marque") }}
+              {{ form.modele.label(class="form-label mt-3") }}
+              {{ form.modele(class="form-control", id="modele") }}
+              {{ form.caracteristiques_techniques.label(class="form-label mt-3") }}
+              {{ form.caracteristiques_techniques(class="form-control", id="caracteristiques_techniques", rows="3") }}
+            </div>
+            <div class="col-md-6">
+              {{ form.type.label(class="form-label") }}
+              {{ form.type(class="form-control", id="type") }}
+              {{ form.capacite_passagers.label(class="form-label mt-3") }}
+              {{ form.capacite_passagers(class="form-control", id="capacite_passagers") }}
+              {{ form.volume_coffre_bagages.label(class="form-label mt-3") }}
+              {{ form.volume_coffre_bagages(class="form-control", id="volume_coffre_bagages") }}
+              {{ form.volume_coffre_rabattus.label(class="form-label mt-3") }}
+              {{ form.volume_coffre_rabattus(class="form-control", id="volume_coffre_rabattus") }}
+              {{ form.nb_sieges_bebe.label(class="form-label mt-3") }}
+              {{ form.nb_sieges_bebe(class="form-control", id="nb_sieges_bebe") }}
+              {{ form.nb_valises.label(class="form-label mt-3") }}
+              {{ form.nb_valises(class="form-control", id="nb_valises") }}
+              <div class="form-check mt-3">
+                {{ form.coffre_de_toit(class="form-check-input", id="coffre_de_toit") }}
+                {{ form.coffre_de_toit.label(class="form-check-label") }}
+              </div>
+              {{ form.details_coffre_toit.label(class="form-label mt-3") }}
+              {{ form.details_coffre_toit(class="form-control", id="details_coffre_toit", rows="2") }}
+              <div class="form-check form-switch mt-3">
+                {{ form.disponible(class="form-check-input", id="disponible") }}
+                {{ form.disponible.label(class="form-check-label") }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-success" id="submitBtn">Ajouter</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function editVehicle(id, immat, marque, modele, carac, type, capacite, volBag, volRab, siegesBebe, nbValises,
+                     coffreToit, detailsCoffre, dispo, image) {
+  document.getElementById('modalTitle').textContent = 'Modifier le véhicule';
+  document.getElementById('submitBtn').textContent = 'Modifier';
+  document.getElementById('vehicleId').value = id;
+  document.getElementById('immatriculation').value = immat;
+  document.getElementById('marque').value = marque;
+  document.getElementById('modele').value = modele;
+  document.getElementById('caracteristiques_techniques').value = carac;
+  document.getElementById('type').value = type;
+  document.getElementById('capacite_passagers').value = capacite;
+  document.getElementById('volume_coffre_bagages').value = volBag;
+  document.getElementById('volume_coffre_rabattus').value = volRab;
+  document.getElementById('nb_sieges_bebe').value = siegesBebe;
+  document.getElementById('nb_valises').value = nbValises;
+  document.getElementById('coffre_de_toit').checked = coffreToit === 'True';
+  document.getElementById('details_coffre_toit').value = detailsCoffre;
+  document.getElementById('disponible').checked = dispo === 'True';
+
+  if (image) {
+    document.getElementById('vehicleImagePreview').src = '/static/' + image;
+    document.getElementById('vehicleImagePreview').style.display = 'block';
+  } else {
+    document.getElementById('vehicleImagePreview').style.display = 'none';
+  }
+
+  document.getElementById('vehicleForm').action = '/vehicule/modifier/' + id;
+}
+
+function resetForm() {
+  document.getElementById('modalTitle').textContent = 'Ajouter un véhicule';
+  document.getElementById('submitBtn').textContent = 'Ajouter';
+  document.getElementById('vehicleForm').reset();
+  document.getElementById('vehicleImagePreview').style.display = 'none';
+  document.getElementById('vehicleForm').action = '/admin/dashboard';
+}
+</script>
+{% endblock %}

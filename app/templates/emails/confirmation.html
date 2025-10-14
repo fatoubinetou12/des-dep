@@ -1,0 +1,10 @@
+<p>Bonjour {{ reservation.client_nom }},</p>
+<p>Merci pour votre réservation avec SD Travel ! Voici les détails :</p>
+<ul>
+  <li>Véhicule : {{ vehicule.marque }} {{ vehicule.modele }}</li>
+  <li>Date : {{ reservation.date_heure.strftime('%d/%m/%Y %H:%M') }}</li>
+  <li>Départ : {{ reservation.adresse_depart }}</li>
+  <li>Arrivée : {{ reservation.adresse_arrivee }}</li>
+</ul>
+<p>Nous vous contacterons si besoin.</p>
+<p>L'équipe SD Travel</p>

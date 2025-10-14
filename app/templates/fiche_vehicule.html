@@ -1,0 +1,71 @@
+{% extends "layout.html" %}
+{% block title %}Récapitulatif de votre réservation{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-4 fw-bold">Veuillez vérifier et envoyer votre réservation</h2>
+
+    <div class="card shadow p-4">
+      <div class="row g-4">
+
+        <!-- Colonne véhicule -->
+        <div class="col-md-4 text-center">
+          <img src="{{ url_for('static', filename=vehicule.image) }}"
+               alt="Photo véhicule"
+               class="img-fluid rounded mb-3">
+          <h4>{{ vehicule.marque }} {{ vehicule.modele }}</h4>
+          <p><i class="bi bi-people-fill text-warning"></i> {{ vehicule.capacite_passagers }} passagers</p>
+          <p><i class="bi bi-suitcase text-warning"></i> {{ vehicule.nb_valises }} valises</p>
+        </div>
+
+        <!-- Colonne résumé -->
+        <div class="col-md-8">
+          {% if data %}
+          <h5 class="mb-3">Trajet aller :</h5>
+          <ul class="list-unstyled">
+            <li><strong>Nom :</strong> {{ data.client_nom }}</li>
+            <li><strong>Email :</strong> {{ data.client_email }}</li>
+            <li><strong>Téléphone :</strong> {{ data.client_telephone }}</li>
+            <li><strong>Départ :</strong> {{ data.adresse_depart }}</li>
+            <li><strong>Arrivée :</strong> {{ data.adresse_arrivee }}</li>
+            <li><strong>Date et heure :</strong> {{ data.date_heure }}</li>
+            {% if data.vol_info %}
+              <li><strong>Vol/Train :</strong> {{ data.vol_info }}</li>
+            {% endif %}
+            <li><strong>Passagers :</strong> {{ data.nb_passagers }}</li>
+            <li><strong>Valises 23 kg :</strong> {{ data.nb_valises_23kg or 0 }}</li>
+            <li><strong>Valises 10 kg :</strong> {{ data.nb_valises_10kg or 0 }}</li>
+            <li><strong>Sièges bébé :</strong> {{ data.nb_sieges_bebe or 0 }}</li>
+            {% if data.poids_enfants %}
+              <li><strong>Poids enfants :</strong> {{ data.poids_enfants }}</li>
+            {% endif %}
+            <li><strong>Méthode de paiement :</strong> {{ data.paiement }}</li>
+            {% if data.commentaires %}
+              <li><strong>Commentaires :</strong> {{ data.commentaires }}</li>
+            {% endif %}
+          </ul>
+
+          <!-- ✅ Formulaire confirmation avec CSRF -->
+          <form method="POST" action="{{ url_for('main.reserver_vehicule', vehicule_id=vehicule.id) }}">
+            {{ form.hidden_tag() }}  {# Token CSRF de FlaskForm #}
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"> {# Token global (sécurité + universalité) #}
+
+            {% for key, value in data.items() %}
+              <input type="hidden" name="{{ key }}" value="{{ value }}">
+            {% endfor %}
+
+            <button type="submit" class="btn btn-success w-100 mt-3">
+              Confirmer la réservation
+            </button>
+          </form>
+
+          {% else %}
+            <p class="text-danger">Aucune donnée trouvée. Veuillez recommencer votre réservation.</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
