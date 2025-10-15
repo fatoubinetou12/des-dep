@@ -92,18 +92,18 @@ def admin_required(f):
             return redirect(url_for("main.login", next=request.path))
         return f(*args, **kwargs)
     return wrapper
+    
 
 
 # ========================
 # Envoi email via SendGrid (HTTP, pas SMTP)
 # ========================
-def _sendgrid_request(to_email, subject, text):
-    api_key = os.getenv("SENDGRID_API_KEY")
-    sender = os.getenv("MAIL_DEFAULT_SENDER") or os.getenv("MAIL_USERNAME")
+def _sendgrid_request(to_email, subject, text, sender, api_key):
+    """Appel HTTP SendGrid (sans dépendre de current_app)."""
     if not api_key:
-        raise Exception("SENDGRID_API_KEY manquant (Render → Environment).")
+        raise Exception("SENDGRID_API_KEY manquant")
     if not sender:
-        raise Exception("MAIL_DEFAULT_SENDER manquant.")
+        raise Exception("MAIL_DEFAULT_SENDER manquant")
 
     payload = {
         "personalizations": [{"to": [{"email": to_email}]}],
@@ -126,18 +126,26 @@ def _sendgrid_request(to_email, subject, text):
 
 
 def send_via_sendgrid_async(to_email, subject, text):
-    # envoie dans un thread pour ne pas bloquer la requête web
+    """
+    Lance l'envoi dans un thread sans utiliser current_app dans le thread.
+    On capture l'app et les configs avant de démarrer le thread,
+    puis on ré-ouvre un app_context dans le thread.
+    """
+    app = current_app._get_current_object()  # capture l'objet app réel
+    # capture les valeurs de config/env AVANT de quitter le contexte
+    api_key = (os.getenv("SENDGRID_API_KEY") or "").strip()
+    sender = (os.getenv("MAIL_DEFAULT_SENDER") or os.getenv("MAIL_USERNAME") or "").strip()
+
     def _job():
-        try:
-            _sendgrid_request(to_email, subject, text)
-        except Exception as e:
-            current_app.logger.error(f"[SendGrid] Echec envoi vers {to_email}: {e}")
+        # rouvre un contexte d'application pour pouvoir utiliser app.logger si besoin
+        with app.app_context():
+            try:
+                _sendgrid_request(to_email, subject, text, sender, api_key)
+                app.logger.info(f"[SendGrid] envoyé à {to_email}")
+            except Exception as e:
+                app.logger.error(f"[SendGrid] échec vers {to_email}: {e}")
 
     Thread(target=_job, daemon=True).start()
-
-
-# ========================
-# Pages publiques
 # ========================
 @main.route("/")
 def home():
