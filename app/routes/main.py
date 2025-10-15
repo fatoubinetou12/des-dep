@@ -2,16 +2,16 @@ import os
 import requests
 from datetime import datetime
 from functools import wraps
+from threading import Thread
 
 from flask import (
     Blueprint, render_template, request, session,
     redirect, url_for, flash, current_app, jsonify
 )
 from werkzeug.utils import secure_filename
-from flask_mail import Message
 from sqlalchemy import and_, or_
 
-from app import db, mail
+from app import db, mail  # mail peut rester importé même si on n'utilise plus SMTP
 from app.forms.forms import (
     AdminLoginForm, AddVehiculeForm, ReservationForm,
     AddTarifForfaitForm, AddTarifRegleForm
@@ -92,6 +92,48 @@ def admin_required(f):
             return redirect(url_for("main.login", next=request.path))
         return f(*args, **kwargs)
     return wrapper
+
+
+# ========================
+# Envoi email via SendGrid (HTTP, pas SMTP)
+# ========================
+def _sendgrid_request(to_email, subject, text):
+    api_key = os.getenv("SENDGRID_API_KEY")
+    sender = os.getenv("MAIL_DEFAULT_SENDER") or os.getenv("MAIL_USERNAME")
+    if not api_key:
+        raise Exception("SENDGRID_API_KEY manquant (Render → Environment).")
+    if not sender:
+        raise Exception("MAIL_DEFAULT_SENDER manquant.")
+
+    payload = {
+        "personalizations": [{"to": [{"email": to_email}]}],
+        "from": {"email": sender},
+        "subject": subject,
+        "content": [{"type": "text/plain", "value": text}],
+    }
+
+    r = requests.post(
+        "https://api.sendgrid.com/v3/mail/send",
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+        },
+        json=payload,
+        timeout=10,
+    )
+    if r.status_code >= 400:
+        raise Exception(f"Erreur SendGrid {r.status_code}: {r.text}")
+
+
+def send_via_sendgrid_async(to_email, subject, text):
+    # envoie dans un thread pour ne pas bloquer la requête web
+    def _job():
+        try:
+            _sendgrid_request(to_email, subject, text)
+        except Exception as e:
+            current_app.logger.error(f"[SendGrid] Echec envoi vers {to_email}: {e}")
+
+    Thread(target=_job, daemon=True).start()
 
 
 # ========================
@@ -316,13 +358,9 @@ def reserver_vehicule(vehicule_id):
         flash("Une erreur est survenue lors de l'enregistrement. Réessayez.", "danger")
         return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
 
-    # Email admin
+    # Email admin (SendGrid)
     try:
-        msg = Message(
-            subject="Nouvelle réservation - DS Travel",
-            recipients=[current_app.config.get('ADMIN_EMAIL')]
-        )
-        msg.body = f"""
+        body_admin = f"""
 Nouvelle réservation pour le véhicule {v.marque} {v.modele}
 
 Nom : {r.client_nom}
@@ -340,18 +378,18 @@ Poids enfants : {r.poids_enfants or '-'}
 Paiement : {r.paiement}
 Commentaires : {r.commentaires or '-'}
 """
-        mail.send(msg)
-    except Exception as e:
-        current_app.logger.error(f"Erreur email admin : {e}")
-        flash("Réservation enregistrée mais l'e-mail n'a pas pu être envoyé à l'admin.", "warning")
-
-    # Email client
-    try:
-        msg_client = Message(
-            subject="Confirmation de votre réservation - DS Travel",
-            recipients=[r.client_email]
+        send_via_sendgrid_async(
+            current_app.config.get("ADMIN_EMAIL"),
+            "Nouvelle réservation - DS Travel",
+            body_admin,
         )
-        msg_client.body = f"""
+    except Exception as e:
+        current_app.logger.error(f"Erreur email admin (SendGrid) : {e}")
+        flash("Réservation enregistrée mais l'e-mail admin n'a pas pu partir.", "warning")
+
+    # Email client (SendGrid)
+    try:
+        body_client = f"""
 Bonjour {r.client_nom},
 
 Nous confirmons la réception de votre réservation pour le véhicule {v.marque} {v.modele}.
@@ -363,10 +401,14 @@ Date & Heure : {r.date_heure.strftime('%Y-%m-%d %H:%M')}
 Merci d’avoir choisi DS Travel.
 Nous vous recontacterons pour confirmer votre réservation.
 """
-        mail.send(msg_client)
+        send_via_sendgrid_async(
+            r.client_email,
+            "Confirmation de votre réservation - DS Travel",
+            body_client,
+        )
     except Exception as e:
-        current_app.logger.error(f"Erreur email client : {e}")
-        flash("Réservation enregistrée mais l'e-mail de confirmation n'a pas pu être envoyé au client.", "warning")
+        current_app.logger.error(f"Erreur email client (SendGrid) : {e}")
+        flash("Réservation enregistrée mais l'e-mail client n'a pas pu partir.", "warning")
 
     # Normalisation pour affichage sur la même page
     data["date_heure"] = r.date_heure.strftime("%Y-%m-%d %H:%M")
@@ -677,30 +719,27 @@ def debug_routes():
     return "<pre>" + "\n".join(sorted(lines)) + "</pre>"
 
 
-@main.route("/debug/email")
-def debug_email():
-    """Route temporaire pour tester l'envoi SMTP."""
+@main.route("/debug/sendgrid")
+def debug_sendgrid():
+    """Test d'envoi via SendGrid."""
     try:
-        msg = Message(
-            subject="Test SMTP DS Travel",
-            recipients=[current_app.config.get("ADMIN_EMAIL")],
-            body="Ceci est un test depuis Render/Flask-Mail."
+        send_via_sendgrid_async(
+            os.getenv("ADMIN_EMAIL"),
+            "Test SendGrid DS Travel",
+            "Ceci est un test d'envoi via SendGrid."
         )
-        mail.send(msg)
-        return "Email envoyé ✅", 200
+        return "✅ Email (SendGrid) déclenché", 200
     except Exception as e:
-        current_app.logger.exception("Echec envoi email debug")
-        return f"Echec: {e}", 500
+        current_app.logger.exception("Echec test SendGrid")
+        return f"❌ Erreur SendGrid : {e}", 500
 
 
 @main.route("/debug/mail")
 def debug_mail():
     c = current_app.config
     return (
-        f"DEFAULT_SENDER={c.get('MAIL_DEFAULT_SENDER')!r}\n"
-        f"USERNAME={c.get('MAIL_USERNAME')!r}\n"
-        f"SUPPRESS_SEND={c.get('MAIL_SUPPRESS_SEND')}\n"
-        f"SERVER={c.get('MAIL_SERVER')!r} PORT={c.get('MAIL_PORT')}\n",
+        f"DEFAULT_SENDER={ (os.getenv('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_USERNAME'))!r }\n"
+        f"SENDGRID_API_KEY={'SET' if os.getenv('SENDGRID_API_KEY') else 'MISSING'}\n",
         200,
         {"Content-Type": "text/plain"},
     )
