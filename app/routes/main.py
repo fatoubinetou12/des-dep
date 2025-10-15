@@ -317,13 +317,13 @@ def reserver_vehicule(vehicule_id):
         return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
 
     # Email admin
-    try:
-        msg = Message(
-            subject="Nouvelle réservation - DS Travel",
-            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
-            recipients=[current_app.config.get("ADMIN_EMAIL")],
-        )
-        msg.body = f"""
+    # Email admin
+try:
+    msg = Message(
+        subject="Nouvelle réservation - DS Travel",
+        recipients=[current_app.config.get('ADMIN_EMAIL')]
+    )
+    msg.body = f"""
 Nouvelle réservation pour le véhicule {v.marque} {v.modele}
 
 Nom : {r.client_nom}
@@ -341,19 +341,20 @@ Poids enfants : {r.poids_enfants or '-'}
 Paiement : {r.paiement}
 Commentaires : {r.commentaires or '-'}
 """
-        mail.send(msg)
-    except Exception as e:
-        current_app.logger.error(f"Erreur email admin : {e}")
-        flash("Réservation enregistrée mais l'e-mail n'a pas pu être envoyé à l'admin.", "warning")
+    mail.send(msg)
+except Exception as e:
+    current_app.logger.error(f"Erreur email admin : {e}")
+    flash("Réservation enregistrée mais l'e-mail n'a pas pu être envoyé à l'admin.", "warning")
+
 
     # Email client
-    try:
-        msg_client = Message(
-            subject="Confirmation de votre réservation - DS Travel",
-            sender=current_app.config.get("MAIL_DEFAULT_SENDER"),
-            recipients=[r.client_email],
-        )
-        msg_client.body = f"""
+    # Email client
+try:
+    msg_client = Message(
+        subject="Confirmation de votre réservation - DS Travel",
+        recipients=[r.client_email]
+    )
+    msg_client.body = f"""
 Bonjour {r.client_nom},
 
 Nous confirmons la réception de votre réservation pour le véhicule {v.marque} {v.modele}.
@@ -365,10 +366,11 @@ Date & Heure : {r.date_heure.strftime('%Y-%m-%d %H:%M')}
 Merci d’avoir choisi DS Travel.
 Nous vous recontacterons pour confirmer votre réservation.
 """
-        mail.send(msg_client)
-    except Exception as e:
-        current_app.logger.error(f"Erreur email client : {e}")
-        flash("Réservation enregistrée mais l'e-mail de confirmation n'a pas pu être envoyé au client.", "warning")
+    mail.send(msg_client)
+except Exception as e:
+    current_app.logger.error(f"Erreur email client : {e}")
+    flash("Réservation enregistrée mais l'e-mail de confirmation n'a pas pu être envoyé au client.", "warning")
+
 
     # Normalisation pour affichage sur la même page
     data["date_heure"] = r.date_heure.strftime("%Y-%m-%d %H:%M")
@@ -693,3 +695,15 @@ def debug_email():
     except Exception as e:
         current_app.logger.exception("Echec envoi email debug")
         return f"Echec: {e}", 500
+        @main.route("/debug/mail")
+def debug_mail():
+    c = current_app.config
+    return (
+        f"DEFAULT_SENDER={c.get('MAIL_DEFAULT_SENDER')!r}\n"
+        f"USERNAME={c.get('MAIL_USERNAME')!r}\n"
+        f"SUPPRESS_SEND={c.get('MAIL_SUPPRESS_SEND')}\n"
+        f"SERVER={c.get('MAIL_SERVER')!r} PORT={c.get('MAIL_PORT')}\n",
+        200,
+        {"Content-Type": "text/plain"},
+    )
+
