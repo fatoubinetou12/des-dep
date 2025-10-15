@@ -769,4 +769,12 @@ def debug_sendgrid_verbose():
         )
     except Exception as e:
         return f"Exception: {e}", 500, {"Content-Type": "text/plain"}
+        @main.route("/debug/key")
+def debug_key():
+    k = os.getenv("SENDGRID_API_KEY")
+    return (
+        f"len={len(k) if k else 0}\nrepr={repr(k)}\n",
+        200, {"Content-Type": "text/plain"}
+    )
+
 
