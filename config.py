@@ -29,6 +29,7 @@ class Config:
 
     # ⚠️ désactive les envois si =1 → sur Render, mets MAIL_SUPPRESS_SEND=0
     MAIL_SUPPRESS_SEND = os.getenv('MAIL_SUPPRESS_SEND', '1') == '1'
+    ADMIN_EMAIL = os.getenv('ADMIN_EMAIL', '')
 
     # ======================
     # 🔑 Google Maps
