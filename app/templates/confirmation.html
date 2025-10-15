@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% block title %}Réservation confirmée{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+  <div class="container" style="max-width:900px;">
+    <div class="text-center mb-4">
+      <h2 class="fw-bold text-success">Merci {{ r.client_nom }} ! Votre réservation est bien enregistrée ✅</h2>
+      <p class="text-muted">Référence interne : <strong>#{{ r.id }}</strong></p>
+      <p>Nous vous contacterons très bientôt pour confirmer les détails.</p>
+    </div>
+
+    <div class="card shadow border-0">
+      <div class="card-body">
+        <div class="row g-4">
+          <div class="col-md-4 text-center">
+            <img src="{{ url_for('static', filename=vehicule.image or 'images/placeholder-vehicule.jpg') }}"
+                 alt="Véhicule"
+                 class="img-fluid rounded mb-3">
+            <h5 class="mb-1">{{ vehicule.marque }} {{ vehicule.modele }}</h5>
+            <div class="text-muted small">
+              <i class="bi bi-people-fill"></i> {{ vehicule.capacite_passagers }} passagers ·
+              <i class="bi bi-suitcase"></i> {{ vehicule.nb_valises }} valises
+            </div>
+          </div>
+
+          <div class="col-md-8">
+            <h5 class="text-success mb-3">Détails de votre trajet</h5>
+            <ul class="list-unstyled">
+              <li><strong>Départ :</strong> {{ r.adresse_depart }}</li>
+              <li><strong>Arrivée :</strong> {{ r.adresse_arrivee }}</li>
+              <li><strong>Date & heure :</strong> {{ r.date_heure.strftime("%d/%m/%Y %H:%M") }}</li>
+              {% if r.vol_info %}<li><strong>Numéro de vol :</strong> {{ r.vol_info }}</li>{% endif %}
+              <li><strong>Passagers :</strong> {{ r.nb_passagers }}</li>
+              <li><strong>Valises :</strong> {{ r.nb_valises_23kg + r.nb_valises_10kg }}</li>
+              <li><strong>Sièges bébé :</strong> {{ r.nb_sieges_bebe }}</li>
+              <li><strong>Méthode de paiement :</strong> {{ r.paiement }}</li>
+              {% if r.commentaires %}
+              <li><strong>Commentaire :</strong> {{ r.commentaires }}</li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+
+        <hr class="my-4">
+        <div class="text-center">
+          <a href="{{ url_for('main.home') }}" class="btn btn-success px-4">
+            <i class="bi bi-house"></i> Retour à l'accueil
+          </a>
+          <a href="https://wa.me/221778602582?text=Bonjour%20DS%20Travel,%20je%20viens%20de%20réserver%20un%20trajet%20de%20{{ r.adresse_depart }}%20à%20{{ r.adresse_arrivee }}"
+             class="btn btn-outline-success px-4" target="_blank">
+            <i class="bi bi-whatsapp"></i> Contacter WhatsApp
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

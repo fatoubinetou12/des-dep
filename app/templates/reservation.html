@@ -18,23 +18,21 @@
     <div class="bg-white text-dark rounded shadow p-4 mx-auto" style="max-width:900px;">
       <form method="POST" action="{{ url_for('main.reservation_recap', vehicule_id=vehicule.id) }}">
         {{ form.hidden_tag() }}
-        <!-- ✅ Ajout du token lisible par JavaScript -->
-        <input type="hidden" id="csrf_token" value="{{ csrf_token() }}">
 
         <!-- Détails client -->
         <h4 class="text-success border-bottom pb-2 mb-4">Détails client</h4>
         <div class="row g-3">
           <div class="col-md-6">
             {{ form.client_nom.label(class="form-label") }}
-            {{ form.client_nom(class="form-control") }}
+            {{ form.client_nom(class="form-control", placeholder="Votre nom complet") }}
           </div>
           <div class="col-md-6">
             {{ form.client_email.label(class="form-label") }}
-            {{ form.client_email(class="form-control") }}
+            {{ form.client_email(class="form-control", placeholder="ex: nom@email.com") }}
           </div>
           <div class="col-md-6">
             {{ form.client_telephone.label(class="form-label") }}
-            {{ form.client_telephone(class="form-control") }}
+            {{ form.client_telephone(class="form-control", placeholder="ex: +221 77 000 00 00") }}
           </div>
         </div>
 
@@ -46,25 +44,15 @@
             {{ form.date_heure(class="form-control") }}
           </div>
           <div class="col-md-6">
-            {{ form.vol_info.label(class="form-label") }}
-            {{ form.vol_info(class="form-control") }}
+            
           </div>
           <div class="col-md-6">
             {{ form.adresse_depart.label(class="form-label") }}
-            {{ form.adresse_depart(id="adresse_depart", class="form-control") }}
+            {{ form.adresse_depart(id="adresse_depart", class="form-control", placeholder="Adresse de départ") }}
           </div>
           <div class="col-md-6">
             {{ form.adresse_arrivee.label(class="form-label") }}
-            {{ form.adresse_arrivee(id="adresse_arrivee", class="form-control") }}
-          </div>
-        </div>
-
-        <!-- Estimation rapide dans le formulaire -->
-        <div id="estimationBox" class="border rounded p-3 text-center my-4 d-none">
-          <div class="row">
-            <div class="col-md-4"><strong>Distance :</strong> <span id="distance_km">-</span> Km</div>
-            <div class="col-md-4"><strong>Temps :</strong> <span id="temps_min">-</span> Min</div>
-            <div class="col-md-4"><strong>Total aller :</strong> <span id="tarif">-</span></div>
+            {{ form.adresse_arrivee(id="adresse_arrivee", class="form-control", placeholder="Adresse d’arrivée") }}
           </div>
         </div>
 
@@ -102,7 +90,7 @@
           </div>
           <div class="col-12">
             {{ form.commentaires.label(class="form-label") }}
-            {{ form.commentaires(class="form-control", rows=3) }}
+            {{ form.commentaires(class="form-control", rows=3, placeholder="Informations utiles pour le chauffeur…") }}
           </div>
         </div>
 
@@ -114,59 +102,6 @@
         </div>
       </form>
     </div>
-
-    <!-- ✅ Résumé final en bas -->
-    <div id="recapBas" class="bg-dark text-white rounded shadow p-4 mt-5 d-none">
-      <h4 class="text-center text-success mb-3">Résumé de votre trajet</h4>
-      <p class="lead text-center mb-1"><strong>Distance :</strong> <span id="distance_km_bottom">-</span> Km</p>
-      <p class="lead text-center mb-1"><strong>Prix total :</strong> <span id="tarif_bottom">-</span></p>
-    </div>
   </div>
 </section>
-
-<!-- Google Places + AJAX calcul tarif -->
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_key }}&libraries=places"></script>
-<script>
-function initAutocomplete() {
-  const depart = document.getElementById('adresse_depart');
-  const arrivee = document.getElementById('adresse_arrivee');
-  if (depart) new google.maps.places.Autocomplete(depart, {componentRestrictions:{country:'sn'}});
-  if (arrivee) new google.maps.places.Autocomplete(arrivee, {componentRestrictions:{country:'sn'}});
-  // déclenchement quand on modifie un champ
-  [depart, arrivee].forEach(el => el?.addEventListener('change', majEstimation));
-}
-
-function majEstimation() {
-  const depart = document.getElementById('adresse_depart').value;
-  const arrivee = document.getElementById('adresse_arrivee').value;
-  if (!depart || !arrivee) return;
-
-  const csrf = document.getElementById('csrf_token').value;
-
-  fetch("{{ url_for('main.calculer_tarif') }}", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-CSRFToken": csrf
-    },
-    body: JSON.stringify({ depart, arrivee })
-  })
-  .then(resp => resp.json())
-  .then(data => {
-    if (data.error) { alert(data.error); return; }
-    // Mise à jour du bloc estimation
-    document.getElementById('distance_km').textContent = data.distance_km;
-    document.getElementById('temps_min').textContent = data.temps_min;
-    document.getElementById('tarif').textContent = data.tarif;
-    document.getElementById('estimationBox').classList.remove('d-none');
-    // Mise à jour du résumé du bas
-    document.getElementById('distance_km_bottom').textContent = data.distance_km;
-    document.getElementById('tarif_bottom').textContent = data.tarif;
-    document.getElementById('recapBas').classList.remove('d-none');
-  })
-  .catch(err => console.error(err));
-}
-
-document.addEventListener('DOMContentLoaded', initAutocomplete);
-</script>
 {% endblock %}

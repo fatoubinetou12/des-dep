@@ -42,3 +42,25 @@ body#home-page .whatsapp-float:hover {
   background-color: #1ebe5c;
   transform: scale(1.1);
 }
+
+.site-footer{
+  background: linear-gradient(160deg,#0b8043 0%, #0a6e3a 60%, #085a30 100%);
+  color:#fff;
+  position: relative;
+  overflow: hidden;
+}
+.site-footer::before{
+  content:"";
+  position:absolute; inset:-40% -20% auto auto;
+  width:420px; height:420px; border-radius:50%;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,.08), rgba(255,255,255,0));
+  transform: rotate(15deg);
+  pointer-events:none;
+}
+.footer-logo{ height:42px; width:auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.2)); }
+.text-accent{ color:#ffd166 !important; }
+.site-footer .social{ width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; }
+.site-footer a.link-light:hover,
+.site-footer .social:hover{ opacity:.85; transform: translateY(-1px); transition: .2s ease; }
+.footer-sep{ border-color: rgba(255,255,255,.15); }
+

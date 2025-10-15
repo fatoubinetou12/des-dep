@@ -60,29 +60,7 @@ def parse_datetime_local(value: str):
         return None
 
 
-def get_distance_and_time(depart, arrivee):
-    """Distance (km) + durée (min) via Google Distance Matrix."""
-    key = current_app.config.get("GOOGLE_MAPS_KEY")
-    if not key:
-        raise Exception("Clé Google Maps manquante (GOOGLE_MAPS_KEY).")
-    url = "https://maps.googleapis.com/maps/api/distancematrix/json"
-    params = {
-        "origins": depart,
-        "destinations": arrivee,
-        "mode": "driving",
-        "units": "metric",
-        "key": key,
-    }
-    r = requests.get(url, params=params, timeout=15)
-    data = r.json()
-    if data.get("status") != "OK":
-        raise Exception(f"Erreur API Google : {data.get('status')}")
-    element = data["rows"][0]["elements"][0]
-    if element.get("status") != "OK":
-        raise Exception(f"Impossible de calculer la distance : {element.get('status')}")
-    distance_km = element["distance"]["value"] / 1000
-    temps_min = element["duration"]["value"] / 60
-    return distance_km, temps_min
+
 
 
 def admin_required(f):
@@ -319,11 +297,37 @@ def reservation_page(vehicule_id):
 def reservation_recap(vehicule_id):
     v = Vehicule.query.get_or_404(vehicule_id)
     form = ReservationForm()
+
+    # Récupération des champs
     data = {k: (request.form.get(k) or "").strip() for k in [
         "client_nom", "client_email", "client_telephone", "date_heure", "vol_info",
         "adresse_depart", "adresse_arrivee", "nb_passagers", "nb_valises_23kg",
         "nb_valises_10kg", "nb_sieges_bebe", "poids_enfants", "paiement", "commentaires"
     ]}
+
+    # ==== VALIDATIONS (conserve celles que tu avais) ====
+    client_email = data.get("client_email", "")
+    if not data["client_nom"] or not client_email or "@" not in client_email:
+        flash("Merci de remplir un nom et une adresse email valide.", "danger")
+        return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
+
+    if not data["adresse_depart"] or not data["adresse_arrivee"]:
+        flash("Merci de remplir les adresses de départ et d'arrivée.", "danger")
+        return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
+
+    # (Optionnel) vérif date si tu veux dès le récap :
+    # if not parse_datetime_local(data.get("date_heure")):
+    #     flash("Format de date/heure invalide.", "danger")
+    #     return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
+
+    # ==== ✅ SAUVEGARDE BROUILLON EN SESSION ====
+    drafts = session.get("reservation_drafts", {})
+    drafts[str(vehicule_id)] = data
+    session["reservation_drafts"] = drafts
+
+    # Affichage du récap
+    return render_template("fiche_vehicule.html", vehicule=v, data=data, form=form)
+
     
     # VALIDATION RENFORCÉE
     client_email = data.get("client_email", "").strip()
@@ -473,12 +477,20 @@ Nous vous recontacterons pour confirmer votre réservation.
     data["poids_enfants"] = r.poids_enfants or "-"
 
     flash("Réservation enregistrée, nous vous contacterons.", "success")
-    return render_template("fiche_vehicule.html", vehicule=v, data=data, form=ReservationForm())
+    return redirect(url_for("main.confirmation_reservation", reservation_id=r.id))
+
 
 
 @main.route("/reserver/<int:vehicule_id>", methods=["GET"])
 def reserver_vehicule_get(vehicule_id):
     return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
+@main.route("/reservation/confirmation/<int:reservation_id>")
+def confirmation_reservation(reservation_id):
+    """Affiche la page de confirmation de réservation"""
+    r = Reservation.query.get_or_404(reservation_id)
+    v = Vehicule.query.get_or_404(r.vehicule_id)
+    return render_template("confirmation.html", r=r, vehicule=v)
+
 
 
 # ========================
@@ -835,3 +847,4 @@ def debug_key():
         200,
         {"Content-Type": "text/plain"},
     )
+    
