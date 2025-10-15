@@ -734,12 +734,39 @@ def debug_sendgrid():
         return f"❌ Erreur SendGrid : {e}", 500
 
 
-@main.route("/debug/mail")
-def debug_mail():
-    c = current_app.config
-    return (
-        f"DEFAULT_SENDER={ (os.getenv('MAIL_DEFAULT_SENDER') or os.getenv('MAIL_USERNAME'))!r }\n"
-        f"SENDGRID_API_KEY={'SET' if os.getenv('SENDGRID_API_KEY') else 'MISSING'}\n",
-        200,
-        {"Content-Type": "text/plain"},
-    )
+@main.route("/debug/sendgrid-verbose")
+def debug_sendgrid_verbose():
+    try:
+        api_key = os.getenv("SENDGRID_API_KEY")
+        sender = os.getenv("MAIL_DEFAULT_SENDER") or os.getenv("MAIL_USERNAME")
+        to_email = os.getenv("ADMIN_EMAIL") or sender
+
+        payload = {
+            "personalizations": [{"to": [{"email": to_email}]}],
+            "from": {"email": sender},
+            "subject": "Test SendGrid VERBOSE",
+            "content": [{"type": "text/plain", "value": "Test verbose depuis DS Travel"}],
+        }
+
+        r = requests.post(
+            "https://api.sendgrid.com/v3/mail/send",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=10,
+        )
+        # SendGrid renvoie souvent 202 si accepté
+        body = r.text.strip()
+        return (
+            f"Status: {r.status_code}\n"
+            f"Response: {body if body else '<no body>'}\n"
+            f"From: {sender}\nTo: {to_email}\n"
+            f"SENDGRID_API_KEY: {'SET' if api_key else 'MISSING'}\n",
+            200,
+            {"Content-Type": "text/plain"},
+        )
+    except Exception as e:
+        return f"Exception: {e}", 500, {"Content-Type": "text/plain"}
+
