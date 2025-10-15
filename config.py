@@ -17,14 +17,20 @@ class Config:
 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-     # E-mail
-    MAIL_SERVER = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
-    MAIL_PORT = int(os.environ.get('MAIL_PORT', 587))
-    MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
-    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
-    ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL')
+    # ======================
+    # ✉️ Config Mail
+    # ======================
+    MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
+    MAIL_PORT = int(os.getenv('MAIL_PORT', '587'))
+    MAIL_USE_TLS = os.getenv('MAIL_USE_TLS', '1') == '1'
+    MAIL_USERNAME = os.getenv('MAIL_USERNAME', '')
+    MAIL_PASSWORD = os.getenv('MAIL_PASSWORD', '')
+    MAIL_DEFAULT_SENDER = os.getenv('MAIL_DEFAULT_SENDER', MAIL_USERNAME)
 
-    # Google Maps API
+    # ⚠️ désactive les envois si =1 → sur Render, mets MAIL_SUPPRESS_SEND=0
+    MAIL_SUPPRESS_SEND = os.getenv('MAIL_SUPPRESS_SEND', '1') == '1'
+
+    # ======================
+    # 🔑 Google Maps
+    # ======================
     GOOGLE_MAPS_KEY = os.getenv('GOOGLE_MAPS_KEY', '')
