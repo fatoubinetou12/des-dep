@@ -736,6 +736,7 @@ def debug_sendgrid():
 
 @main.route("/debug/sendgrid-verbose")
 def debug_sendgrid_verbose():
+    """Test détaillé de SendGrid (affiche le statut exact)."""
     try:
         api_key = os.getenv("SENDGRID_API_KEY")
         sender = os.getenv("MAIL_DEFAULT_SENDER") or os.getenv("MAIL_USERNAME")
@@ -757,7 +758,8 @@ def debug_sendgrid_verbose():
             json=payload,
             timeout=10,
         )
-        # SendGrid renvoie souvent 202 si accepté
+
+        # SendGrid renvoie 202 si accepté
         body = r.text.strip()
         return (
             f"Status: {r.status_code}\n"
@@ -767,14 +769,18 @@ def debug_sendgrid_verbose():
             200,
             {"Content-Type": "text/plain"},
         )
+
     except Exception as e:
         return f"Exception: {e}", 500, {"Content-Type": "text/plain"}
-        @main.route("/debug/key")
+
+
+@main.route("/debug/key")
 def debug_key():
+    """Vérifie la longueur et la forme de la clé API SendGrid."""
     k = os.getenv("SENDGRID_API_KEY")
     return (
         f"len={len(k) if k else 0}\nrepr={repr(k)}\n",
-        200, {"Content-Type": "text/plain"}
+        200,
+        {"Content-Type": "text/plain"},
     )
-
 
