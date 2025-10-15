@@ -18,7 +18,7 @@ from app.forms.forms import (
 from app.models.models import Vehicule, Reservation, TarifForfait, TarifRegle
 
 # ⬇️ important: éviter les 404 liés au / final
-main = Blueprint('main', __name__, strict_slashes=False)
+main = Blueprint('main', __name__)
 
 # ------------------------
 # Helpers
