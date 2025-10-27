@@ -2,15 +2,15 @@
 {% block title %}Accueil{% endblock %}
 
 {% block content %}
-<!-- ======== Bannière avec estimation ======== -->
+
 <section class="text-white fullscreen-banner">
   <!-- Image en arrière-plan -->
   <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70"
        alt="voiture de luxe"
-       style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1;">
+       style="position: absolute; top: 0; left: 0; width: 100%; height: 80vh; object-fit: cover; object-position: center; z-index: 1; filter: brightness(70%);">
 
-  <!-- Filtre sombre -->
-  <div style="position: absolute; inset: 0; background-color: rgba(0, 0, 0, 0.6); z-index: 2;"></div>
+  <div style="position: absolute; top: 0; left: 0; width: 100%; height: 80vh;
+            background-color: rgba(0, 0, 0, 0.6); z-index: 2;"></div>
 
   <!-- Contenu centré -->
   <div class="d-flex flex-column justify-content-center align-items-center text-center"
@@ -33,154 +33,112 @@
   </div>
 </section>
 
+
 <!-- ======== Sections existantes ======== -->
 <div class="container text-center py-5 px-3"></div>
 
 <div class="container text-center py-5">
   <!-- ======= Pourquoi choisir DS TRAVEL ======= -->
-  <section class="py-5 bg-light">
-    <div class="container">
-      <h2 class="text-center mb-4 fw-bold">
-        Pourquoi choisir <span class="text-success">DS TRAVEL</span> ?
-      </h2>
-      <p class="text-center mb-5 lead">
-        Forts de notre expérience, nous garantissons un service de qualité,
-        alliant ponctualité, sécurité et confort. Notre priorité est votre satisfaction.
-      </p>
+ <section class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-4 fw-bold">
+      Pourquoi choisir <span class="text-success">DS TRAVEL</span> ?
+    </h2>
+    <p class="text-center mb-5 lead">
+      Forts de notre expérience, nous garantissons un service de qualité,
+      alliant ponctualité, sécurité et confort. Notre priorité est votre satisfaction.
+    </p>
 
-      <div class="row g-5 text-center">
-        <div class="col-md-4">
-          <h4 class="text-success mb-4">Services principaux</h4>
-          <div class="mb-4">
-            <div class="text-warning fs-2 mb-2"><i class="bi bi-airplane"></i></div>
-            <h5>Transferts aéroports et gares</h5>
-            <p>Réservez votre chauffeur pour l’aéroport AIBD ou tout déplacement longue distance.</p>
-          </div>
-          <div class="mb-4">
-            <div class="text-warning fs-2 mb-2"><i class="bi bi-signpost-split"></i></div>
-            <h5>Trajets longue distance</h5>
-            <p>Déplacements dans tout le Sénégal, même vers les villes les plus éloignées.</p>
-          </div>
-          <div>
-            <div class="text-warning fs-2 mb-2"><i class="bi bi-briefcase"></i></div>
-            <h5>Déplacements professionnels</h5>
-            <p>Idéal pour vos rendez-vous d’affaires, congrès et événements officiels.</p>
-          </div>
-        </div>
+    <!-- Grille uniforme 3 x 3 -->
+    <div class="row row-cols-1 row-cols-md-3 g-4 align-items-stretch">
 
-        <div class="col-md-4">
-          <h4 class="text-success mb-4">Nos valeurs</h4>
-          <div class="mb-4">
-            <div class="text-warning fs-2 mb-2"><i class="bi bi-clock-history"></i></div>
-            <h5>Ponctualité</h5>
-            <p>Des chauffeurs toujours à l’heure pour vos déplacements importants.</p>
-          </div>
-          <div class="mb-4">
-            <div class="text-warning fs-2 mb-2"><i class="bi bi-heart"></i></div>
-            <h5>Service personnalisé</h5>
-            <p>Nous adaptons chaque trajet à vos besoins spécifiques.</p>
-          </div>
-          <div>
-            <div class="text-warning fs-2 mb-2"><i class="bi bi-chat-dots"></i></div>
-            <h5>Assistance 24/7</h5>
-            <p>Un support permanent pour vos réservations et questions.</p>
-          </div>
-        </div>
-
-        <div class="col-md-4">
-          <h4 class="text-success mb-4">Nos engagements</h4>
-          <div class="mb-4">
-            <div class="text-warning fs-2 mb-2"><i class="bi bi-cash-coin"></i></div>
-            <h5>Tarifs clairs et fixes</h5>
-            <p>Le prix est convenu à l’avance, sans frais cachés.</p>
-          </div>
-          <div class="mb-4">
-            <div class="text-warning fs-2 mb-2"><i class="bi bi-shield-lock"></i></div>
-            <h5>Sécurité</h5>
-            <p>Chauffeurs professionnels, véhicules vérifiés et assurés.</p>
-          </div>
-          <div>
-            <div class="text-warning fs-2 mb-2"><i class="bi bi-cloud-sun"></i></div>
-            <h5>Confort optimal</h5>
-            <p>Véhicules récents, climatisés, pour un trajet agréable.</p>
-          </div>
+      <!-- Services principaux -->
+      <div class="col">
+        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
+          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Services principaux</span>
+          <div class="text-warning fs-1 mb-2"><i class="bi bi-airplane"></i></div>
+          <h5 class="mb-2">Transferts aéroport AIBD</h5>
+          <p class="text-muted mb-0">Réservez votre chauffeur pour l'AIBD et les trajets longue distance.</p>
         </div>
       </div>
-    </div>
-  </section>
 
-  <!-- ======= Prestations ======= -->
-  <section class="prestations">
-    <div class="container">
-      <h2 class="mb-4 text-center">NOS PRESTATIONS</h2>
-      <div class="row g-4">
-        <div class="col-md-6">
-          <div class="card-prestation">
-            <div class="card-prestation-body">
-              <h4 class="title">Aéroports</h4>
-              <p class="text">Attente avec pancarte à votre nom.</p>
-            </div>
-            <div class="card-prestation-img">
-              <img src="{{ url_for('static', filename='images/airoport.jpg') }}" alt="Aéroport">
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="card-prestation">
-            <div class="card-prestation-body">
-              <h4 class="title">Hôtels</h4>
-              <p class="text">Prise en charge directement à la réception.</p>
-            </div>
-            <div class="card-prestation-img">
-              <img src="{{ url_for('static', filename='images/hot.jpg') }}" alt="Hôtels">
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="card-prestation">
-            <div class="card-prestation-body">
-              <h4 class="title">Longue distance</h4>
-              <p class="text">Dakar / Ziguinchor</p>
-            </div>
-            <div class="card-prestation-img">
-              <img src="{{ url_for('static', filename='images/ldistance.jpg') }}" alt="Longue distance">
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="card-prestation">
-            <div class="card-prestation-body">
-              <h4 class="title">Professionnel</h4>
-              <p class="text">RDV d’affaires / Congrès</p>
-            </div>
-            <div class="card-prestation-img">
-              <img src="{{ url_for('static', filename='images/taxii.jpg') }}" alt="Professionnel">
-            </div>
-          </div>
+      <div class="col">
+        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
+          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Services principaux</span>
+          <div class="text-warning fs-1 mb-2"><i class="bi bi-signpost-split"></i></div>
+          <h5 class="mb-2">Trajets longue distance</h5>
+          <p class="text-muted mb-0">Déplacements dans tout le Sénégal, y compris les villes éloignées.</p>
         </div>
       </div>
-    </div>
-  </section>
 
-  <style>
-    .card-prestation {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border: 1px solid #dce3ec;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #fff;
-      transition: all 0.3s ease;
-    }
-    .card-prestation:hover { box-shadow: 0px 8px 20px rgba(0,0,0,0.1); }
-    .card-prestation-body { padding: 20px; flex: 1; }
-    .card-prestation-body .title { color: #2a9d55; font-weight: 600; margin-bottom: 10px; }
-    .card-prestation-body .text { font-size: 15px; color: #333; }
-    .card-prestation-img img {
-      width: 200px; height:150px; object-fit: cover; border-left:1px solid #eee;
-    }
-  </style>
+      <div class="col">
+        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
+          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Services principaux</span>
+          <div class="text-warning fs-1 mb-2"><i class="bi bi-briefcase"></i></div>
+          <h5 class="mb-2">Déplacements professionnels</h5>
+          <p class="text-muted mb-0">Idéal pour vos RDV d'affaires, congrès et événements officiels.</p>
+        </div>
+      </div>
+
+      <!-- Nos valeurs -->
+      <div class="col">
+        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
+          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos valeurs</span>
+          <div class="text-warning fs-1 mb-2"><i class="bi bi-clock-history"></i></div>
+          <h5 class="mb-2">Ponctualité</h5>
+          <p class="text-muted mb-0">Toujours à l'heure pour vos déplacements importants.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
+          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos valeurs</span>
+          <div class="text-warning fs-1 mb-2"><i class="bi bi-heart"></i></div>
+          <h5 class="mb-2">Service personnalisé</h5>
+          <p class="text-muted mb-0">Chaque trajet est adapté à vos besoins spécifiques.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
+          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos valeurs</span>
+          <div class="text-warning fs-1 mb-2"><i class="bi bi-chat-dots"></i></div>
+          <h5 class="mb-2">Assistance 24/7</h5>
+          <p class="text-muted mb-0">Support permanent pour vos réservations et questions.</p>
+        </div>
+      </div>
+
+      <!-- Nos engagements -->
+      <div class="col">
+        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
+          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos engagements</span>
+          <div class="text-warning fs-1 mb-2"><i class="bi bi-cash-coin"></i></div>
+          <h5 class="mb-2">Tarifs clairs et fixes</h5>
+          <p class="text-muted mb-0">Prix convenu à l'avance, sans frais cachés.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
+          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos engagements</span>
+          <div class="text-warning fs-1 mb-2"><i class="bi bi-shield-lock"></i></div>
+          <h5 class="mb-2">Sécurité</h5>
+          <p class="text-muted mb-0">Chauffeurs pro, véhicules vérifiés et assurés.</p>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
+          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos engagements</span>
+          <div class="text-warning fs-1 mb-2"><i class="bi bi-cloud-sun"></i></div>
+          <h5 class="mb-2">Confort optimal</h5>
+          <p class="text-muted mb-0">Véhicules récents, climatisés, trajets agréables.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
 
   <!-- ======= Notre flotte de véhicules ======= -->
   <section class="container py-5" id="notre-flotte">
@@ -316,13 +274,13 @@
       <div class="row justify-content-center">
         <div class="col-md-5">
           <div class="bg-white shadow rounded p-4">
-            <p class="fst-italic">“Service exceptionnel ! Chauffeur ponctuel et très professionnel.”</p>
+            <p class="fst-italic">"Service exceptionnel ! Chauffeur ponctuel et très professionnel."</p>
             <strong>- Amina D.</strong>
           </div>
         </div>
         <div class="col-md-5 mt-4 mt-md-0">
           <div class="bg-white shadow rounded p-4">
-            <p class="fst-italic">“Voiture impeccable et réservation ultra facile. Merci !”</p>
+            <p class="fst-italic">"Voiture impeccable et réservation ultra facile. Merci !"</p>
             <strong>- Moussa K.</strong>
           </div>
         </div>
@@ -341,8 +299,8 @@
       <h2 class="fw-bold">Transferts</h2>
       <h3 class="text-warning mb-4">Aéroport, Villes et Gares du Sénégal</h3>
       <p class="mb-5 lead">
-        Avec DS Travel, profitez d’un service fiable et confortable à travers tout le Sénégal.
-        Que ce soit pour vos trajets depuis l’aéroport AIBD, vos déplacements vers les grandes villes,
+        Avec DS Travel, profitez d'un service fiable et confortable à travers tout le Sénégal.
+        Que ce soit pour vos trajets depuis l'aéroport AIBD, vos déplacements vers les grandes villes,
         ou vos voyages vers les parcs touristiques, nous vous garantissons ponctualité et sécurité.
       </p>
 
@@ -357,7 +315,7 @@
         <div class="col-md-3 mb-3">
           <div class="p-3 bg-dark bg-opacity-50 rounded">
             <h3 class="text-warning">5+</h3>
-            <p>Parcs Touristiques</p>
+            <p>Courses Réalisées avec Satisfaction</p>
           </div>
         </div>
         <div class="col-md-3 mb-3">
@@ -369,21 +327,18 @@
         <div class="col-md-3 mb-3">
           <div class="p-3 bg-dark bg-opacity-50 rounded">
             <h3 class="text-warning">10+</h3>
-            <p>Gares Routières Principales</p>
+            <p>Hôtels et Résidences Desservis</p>
           </div>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- Bouton WhatsApp flottant -->
+  <a href="https://wa.me/221764159999" class="whatsapp-float" target="_blank" aria-label="WhatsApp">
+    <i class="bi bi-whatsapp"></i>
+  </a>
 </div>
-
-
-
-
-<!-- Bouton WhatsApp flottant -->
-<a href="https://wa.me/221764159999" class="whatsapp-float" target="_blank" aria-label="WhatsApp">
-  <i class="bi bi-whatsapp"></i>
-</a>
 
 <style>
 .whatsapp-float {

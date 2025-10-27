@@ -5,8 +5,10 @@ from wtforms import (
 )
 from wtforms.fields.datetime import DateTimeLocalField
 from wtforms.fields.simple import EmailField, TelField
-from wtforms.validators import DataRequired, Optional, Email, NumberRange
+from wtforms.validators import DataRequired, Optional, Email, NumberRange,Length
 from flask_wtf.file import FileAllowed, FileField
+
+
 
 
 # --------------------------
@@ -111,3 +113,15 @@ class EstimationForm(FlaskForm):
     arrivee = StringField('Arrivée', validators=[DataRequired()])
     submit = SubmitField('Estimer')
 
+    # --------------------------
+# Formulaire de contact
+# --------------------------
+
+
+
+class ContactForm(FlaskForm):
+    nom = StringField("Nom", validators=[DataRequired(), Length(max=120)])
+    email = StringField("Email", validators=[DataRequired(), Email(), Length(max=180)])
+    sujet = StringField("Sujet", validators=[DataRequired(), Length(max=160)])
+    message = TextAreaField("Message", validators=[DataRequired(), Length(max=5000)])
+    submit = SubmitField("Envoyer")

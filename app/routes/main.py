@@ -14,9 +14,12 @@ from sqlalchemy import and_, or_
 from app import db, mail
 from app.forms.forms import (
     AdminLoginForm, AddVehiculeForm, ReservationForm,
-    AddTarifForfaitForm, AddTarifRegleForm
+    AddTarifForfaitForm, AddTarifRegleForm, ContactForm
 )
+
 from app.models.models import Vehicule, Reservation, TarifForfait, TarifRegle
+from wtforms.validators import DataRequired, Email, Length
+
 
 
 # ========================
@@ -848,3 +851,49 @@ def debug_key():
         {"Content-Type": "text/plain"},
     )
     
+@main.route("/contact", methods=["GET", "POST"])
+def contact_post():
+    form = ContactForm()
+    if form.validate_on_submit():
+        nom = form.nom.data.strip()
+        email = form.email.data.strip()
+        sujet = form.sujet.data.strip()
+        message = form.message.data.strip()
+
+        # Envoi d'email (tu peux garder ta fonction existante)
+        try:
+            corps_admin = f"""📩 Nouveau message SD Travel
+
+Nom : {nom}
+Email : {email}
+Sujet : {sujet}
+
+Message :
+{message}
+"""
+            send_via_sendgrid_async(
+                os.getenv("ADMIN_EMAIL"),
+                f"Message du formulaire – {nom}",
+                corps_admin
+            )
+
+            corps_client = f"""Bonjour {nom},
+
+Nous avons bien reçu votre message :
+{sujet}
+{message}
+
+Merci de nous avoir contactés.
+— Équipe SD Travel
+"""
+            send_via_sendgrid_async(email, "Confirmation – SD Travel", corps_client)
+
+            flash(" Message envoyé avec succès. Nous vous répondrons sous peu.", "success")
+        except Exception as e:
+            current_app.logger.error(f"Erreur envoi contact : {e}")
+            flash(" Erreur lors de l’envoi. Veuillez réessayer.", "danger")
+
+        return redirect(url_for("main.contact_post"))
+
+    return render_template("contact.html", form=form)
+

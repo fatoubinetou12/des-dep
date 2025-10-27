@@ -1,30 +1,101 @@
-/* Bannière plein écran uniquement sur home */
+/* ============================================
+   🌍 STYLE GLOBAL – DS TRAVEL
+============================================ */
+body {
+  font-family: 'Poppins', sans-serif;
+  padding-top: 72px; /* espace pour la navbar fixe */
+  background-color: #f8f9fa;
+  scroll-behavior: smooth;
+}
+
+/* ============================================
+   🟢 NAVBAR TRANSPARENTE → VERTE AU SCROLL
+============================================ */
+#mainNav {
+  transition: all 0.3s ease-in-out;
+  z-index: 1030;
+}
+
+/* Transparente (home en haut) */
+.nav-hero {
+  background: transparent;
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+.nav-hero .navbar-brand,
+.nav-hero .nav-link {
+  color: #fff !important;
+}
+.nav-hero .navbar-toggler-icon {
+  filter: invert(100%);
+}
+
+/* Solide (au scroll ou sur autres pages) */
+.nav-solid {
+  background: #198754; /* vert DS Travel */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+.nav-solid .navbar-brand,
+.nav-solid .nav-link {
+  color: #fff !important;
+}
+
+/* Hover nav links */
+.navbar .nav-link:hover {
+  color: #ffd166 !important;
+}
+
+/* ============================================
+   🚘 BANNIÈRE PLEIN ÉCRAN – HOME
+============================================ */
 body#home-page .fullscreen-banner {
   background: url('/static/images/ba.jpg') center/cover no-repeat;
   height: 100vh;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #fff;
 }
+
 body#home-page .fullscreen-banner::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.55);
 }
+
 body#home-page .fullscreen-banner > div {
   position: relative;
   z-index: 1;
 }
 
-/* Sections spécifiques home */
-body#home-page .prestations .card-prestation {
-  border-radius: 12px;
-  transition: transform 0.3s ease;
-}
-body#home-page .prestations .card-prestation:hover {
-  transform: translateY(-5px);
+/* ============================================
+   🟩 SECTION “POURQUOI NOUS CHOISIR”
+============================================ */
+body#home-page section {
+  scroll-margin-top: 80px;
 }
 
-/* Bouton WhatsApp flottant */
+body#home-page .bg-light {
+  background-color: #f5f7f8 !important;
+}
+
+/* Cartes services/valeurs/engagements */
+.card-prestation,
+body#home-page .h-100 {
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+.card-prestation:hover,
+body#home-page .h-100:hover {
+  transform: translateY(-5px);
+  box-shadow: 0px 8px 18px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================================
+   💬 BOUTON WHATSAPP FLOTTANT
+============================================ */
 body#home-page .whatsapp-float {
   position: fixed;
   bottom: 20px;
@@ -36,31 +107,78 @@ body#home-page .whatsapp-float {
   font-size: 28px;
   z-index: 1000;
   text-decoration: none;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
 }
 body#home-page .whatsapp-float:hover {
   background-color: #1ebe5c;
   transform: scale(1.1);
 }
 
-.site-footer{
-  background: linear-gradient(160deg,#0b8043 0%, #0a6e3a 60%, #085a30 100%);
-  color:#fff;
+/* ============================================
+   🖤 FOOTER – DÉGRADÉ VERT DS TRAVEL
+============================================ */
+.site-footer {
+  background: linear-gradient(160deg, #0b8043 0%, #0a6e3a 60%, #085a30 100%);
+  color: #fff;
   position: relative;
   overflow: hidden;
 }
-.site-footer::before{
-  content:"";
-  position:absolute; inset:-40% -20% auto auto;
-  width:420px; height:420px; border-radius:50%;
-  background: radial-gradient(ellipse at center, rgba(255,255,255,.08), rgba(255,255,255,0));
-  transform: rotate(15deg);
-  pointer-events:none;
-}
-.footer-logo{ height:42px; width:auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.2)); }
-.text-accent{ color:#ffd166 !important; }
-.site-footer .social{ width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center; }
-.site-footer a.link-light:hover,
-.site-footer .social:hover{ opacity:.85; transform: translateY(-1px); transition: .2s ease; }
-.footer-sep{ border-color: rgba(255,255,255,.15); }
 
+.site-footer::before {
+  content: "";
+  position: absolute;
+  inset: -40% -20% auto auto;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
+  transform: rotate(15deg);
+  pointer-events: none;
+}
+
+.footer-logo {
+  height: 42px;
+  width: auto;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+}
+
+.text-accent {
+  color: #ffd166 !important;
+}
+
+.site-footer .social {
+  width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-footer a.link-light:hover,
+.site-footer .social:hover {
+  opacity: 0.85;
+  transform: translateY(-1px);
+  transition: 0.2s ease;
+}
+
+.footer-sep {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* ============================================
+   ✨ DIVERS
+============================================ */
+.btn-warning {
+  background-color: #ffd166;
+  border: none;
+  color: #333;
+}
+.btn-warning:hover {
+  background-color: #f9c748;
+  color: #222;
+}
+
+.text-success {
+  color: #198754 !important;
+}

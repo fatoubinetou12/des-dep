@@ -1,0 +1,97 @@
+{% extends "layout.html" %}
+{% block title %}Nos véhicules – SD Travel{% endblock %}
+
+{% block content %}
+
+<!-- ===== En-tête ===== -->
+<section class="py-5 text-white text-center"
+         style="background:url('https://images.unsplash.com/photo-1503376780353-7e6692767b70') center/cover no-repeat;">
+  <div class="container py-4" style="background:rgba(0,0,0,0.55); border-radius:14px;">
+    <h1 class="fw-bold mb-2">Notre flotte – SD Travel</h1>
+    <p class="mb-0">Choisissez votre véhicule et réservez en quelques clics.</p>
+  </div>
+</section>
+
+<!-- ===== Liste des véhicules (depuis la BDD) ===== -->
+<section class="py-5 bg-light">
+  <div class="container">
+    {% if vehicules %}
+    <div class="row g-4">
+      {% for v in vehicules %}
+        {% set img = v.image and (v.image|lower|slice(0,4) == 'http')
+                    and v.image or url_for('static', filename=(v.image or 'images/vehicules/placeholder.jpg')) %}
+        <div class="col-12 col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm vehicle-card">
+            <div class="ratio ratio-16x9">
+              <img src="{{ img }}" alt="{{ v.marque }} {{ v.modele }}" class="card-img-top object-cover">
+            </div>
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title mb-1">
+                {{ v.type or 'Véhicule' }} – {{ v.marque }} {{ v.modele }}
+              </h5>
+              <p class="text-muted mb-2">
+                {{ v.caracteristiques_techniques or 'Confort, sécurité et élégance.' }}
+              </p>
+
+              <ul class="list-unstyled small mb-3">
+                <li>👥 Capacité : {{ v.capacite_passagers or 4 }} passagers</li>
+                {% if v.nb_valises %}<li>🧳 Valises : {{ v.nb_valises }}</li>{% endif %}
+                {% if v.coffre_de_toit %}<li>📦 Coffre de toit : Oui</li>{% endif %}
+              </ul>
+
+              <div class="mt-auto d-flex gap-2">
+                <a href="{{ url_for('main.reservation_page', vehicule_id=v.id) }}"
+                   class="btn btn-dark w-100">Réserver</a>
+                <a href="{{ url_for('main.reservation_page', vehicule_id=v.id) }}#details"
+                   class="btn btn-outline-secondary w-100">Détails</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+    {% else %}
+      <div class="text-center py-5">
+        <p class="lead mb-3">Aucun véhicule disponible pour le moment.</p>
+        <a href="{{ url_for('main.home') }}" class="btn btn-outline-dark">Retour à l’accueil</a>
+      </div>
+    {% endif %}
+  </div>
+</section>
+<section class="py-5 bg-light">
+  <div class="container text-center">
+    <i class="bi bi-car-front-fill fs-1 text-primary mb-3"></i>
+    <h2 class="fw-bold">Pourquoi choisir nos véhicules ?</h2>
+    <p class="lead mb-4">
+      Chez <strong>SD Travel</strong>, nous mettons l’accent sur la qualité, la fiabilité et le confort.
+    </p>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="p-3 border rounded h-100 shadow-sm bg-white">
+          <h5> Confort & Élégance</h5>
+          <p class="small mb-0">Des véhicules haut de gamme pour un trajet agréable et stylé.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 border rounded h-100 shadow-sm bg-white">
+          <h5> Ponctualité & Réactivité</h5>
+          <p class="small mb-0">Nos chauffeurs professionnels sont formés à l’excellence du service.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="p-3 border rounded h-100 shadow-sm bg-white">
+          <h5>Sécurité & Sérénité</h5>
+          <p class="small mb-0">Voyagez en toute tranquillité, nous nous occupons de tout.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Style local pour images bien cadrées -->
+<style>
+  .object-cover { object-fit: cover; width: 100%; height: 100%; }
+  .vehicle-card img { border-top-left-radius: .375rem; border-top-right-radius: .375rem; }
+</style>
+
+{% endblock %}
