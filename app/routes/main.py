@@ -16,23 +16,17 @@ from app.forms.forms import (
     AdminLoginForm, AddVehiculeForm, ReservationForm,
     AddTarifForfaitForm, AddTarifRegleForm, ContactForm
 )
-
 from app.models.models import Vehicule, Reservation, TarifForfait, TarifRegle
-from wtforms.validators import DataRequired, Email, Length
-
-
 
 # ========================
 # Blueprint
 # ========================
 main = Blueprint("main", __name__)
 
-
 # ========================
 # Helpers
 # ========================
 def to_int(value, default=None):
-    """Convertit en int ; renvoie default si vide/non convertible."""
     if value is None:
         return default
     s = str(value).strip()
@@ -43,11 +37,9 @@ def to_int(value, default=None):
     except (TypeError, ValueError):
         return default
 
-
 def parse_datetime_local(value: str):
     """
-    Parse un input HTML5 type 'datetime-local'.
-    Exemples acceptés: '2025-10-14T23:51' ou variantes ISO.
+    Parse un input HTML5 type 'datetime-local' (ex: '2025-10-14T23:51').
     """
     if not value:
         return None
@@ -62,10 +54,6 @@ def parse_datetime_local(value: str):
     except Exception:
         return None
 
-
-
-
-
 def admin_required(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -74,12 +62,10 @@ def admin_required(f):
         return f(*args, **kwargs)
     return wrapper
 
-
 # ========================
-# Envoi email via SendGrid (HTTP, pas SMTP) - VERSION CORRIGÉE
+# Envoi email via SendGrid (HTTP)
 # ========================
 def _sendgrid_request(to_email, subject, text, sender, api_key):
-    """Appel HTTP SendGrid (sans dépendre de current_app)."""
     if not api_key:
         raise Exception("SENDGRID_API_KEY manquant")
     if not sender:
@@ -94,42 +80,29 @@ def _sendgrid_request(to_email, subject, text, sender, api_key):
 
     r = requests.post(
         "https://api.sendgrid.com/v3/mail/send",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
+        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
         json=payload,
         timeout=10,
     )
     if r.status_code >= 400:
         raise Exception(f"Erreur SendGrid {r.status_code}: {r.text}")
 
-
 def send_via_sendgrid_async(to_email, subject, text):
-    """
-    VERSION CORRIGÉE - Validation robuste des emails
-    """
     try:
-        # VALIDATION RENFORCÉE DE L'EMAIL
         if not to_email or not isinstance(to_email, str):
-            current_app.logger.error(f"❌ Email destinataire invalide (None ou non-string): {to_email}")
+            current_app.logger.error(f"❌ Email destinataire invalide: {to_email}")
             return
-        
         to_email = to_email.strip()
         if len(to_email) < 6 or "@" not in to_email or "." not in to_email.split("@")[-1]:
             current_app.logger.error(f"❌ Format email incorrect: {to_email}")
             return
 
-        # Configurations
         app = current_app._get_current_object()
         api_key = (os.getenv("SENDGRID_API_KEY") or "").strip()
         sender = (os.getenv("MAIL_DEFAULT_SENDER") or os.getenv("MAIL_USERNAME") or "noreply@dstravel.com").strip()
-
-        # Validation des configs
         if not api_key:
             current_app.logger.error("❌ SENDGRID_API_KEY non configuré")
             return
-        
         if not sender or "@" not in sender:
             current_app.logger.error(f"❌ Expéditeur invalide: {sender}")
             return
@@ -138,19 +111,17 @@ def send_via_sendgrid_async(to_email, subject, text):
             with app.app_context():
                 try:
                     _sendgrid_request(to_email, subject, text, sender, api_key)
-                    app.logger.info(f"✅ [SendGrid] Email envoyé avec succès à: {to_email}")
+                    app.logger.info(f"✅ [SendGrid] Email envoyé: {to_email}")
                 except Exception as e:
-                    app.logger.error(f"❌ [SendGrid] Échec envoi vers {to_email}: {str(e)}")
+                    app.logger.error(f"❌ [SendGrid] Échec envoi {to_email}: {str(e)}")
 
         Thread(target=_job, daemon=True).start()
-        current_app.logger.info(f"🚀 [SendGrid] Processus d'envoi démarré pour: {to_email}")
-        
+        current_app.logger.info(f"🚀 [SendGrid] Envoi asynchrone démarré: {to_email}")
     except Exception as e:
-        current_app.logger.error(f"💥 Erreur critique dans send_via_sendgrid_async: {e}")
-
+        current_app.logger.error(f"💥 Erreur critique send_via_sendgrid_async: {e}")
 
 # ========================
-# Routes
+# Routes publiques
 # ========================
 @main.route("/")
 def home():
@@ -158,8 +129,7 @@ def home():
     transferts_populaires = (
         TarifForfait.query.filter_by(actif=True)
         .order_by(TarifForfait.created_at.desc())
-        .limit(8)
-        .all()
+        .limit(8).all()
     )
     google_key = current_app.config.get("GOOGLE_MAPS_KEY")
     return render_template(
@@ -169,11 +139,9 @@ def home():
         google_key=google_key,
     )
 
-
 @main.route("/a-propos")
 def about():
     return render_template("about.html")
-
 
 # ========================
 # Authentification admin
@@ -189,13 +157,11 @@ def login():
         flash("Identifiants invalides.", "danger")
     return render_template("login.html", form=form)
 
-
 @main.route("/logout")
 def logout():
     session.pop("admin_logged_in", None)
     flash("Déconnexion effectuée.", "info")
     return redirect(url_for("main.home"))
-
 
 # ========================
 # Dashboard Admin - Véhicules
@@ -242,7 +208,6 @@ def admin_dashboard():
 
     return render_template("dashboard.html", form=form, vehicules=vehicules)
 
-
 @main.route("/vehicule/modifier/<int:id>", methods=["POST"])
 @admin_required
 def modifier_vehicule(id):
@@ -269,8 +234,7 @@ def modifier_vehicule(id):
     flash("Véhicule modifié avec succès.", "success")
     return redirect(url_for("main.admin_dashboard"))
 
-
-@main.route("/vehicule/supprimer", methods=["GET"])
+@main.route("/vehicule/supprimer")
 @admin_required
 def supprimer_vehicule():
     v = Vehicule.query.get_or_404(request.args.get("id"))
@@ -279,112 +243,97 @@ def supprimer_vehicule():
     flash("Véhicule supprimé avec succès.", "success")
     return redirect(url_for("main.admin_dashboard"))
 
-
 # ========================
-# Réservations – Workflow client - VERSION CORRIGÉE
+# Réservations – Workflow client
 # ========================
 @main.route("/vehicules-disponibles")
 def vehicules_disponibles():
     vehicules = Vehicule.query.filter_by(disponible=True).all()
     return render_template("vehicules_disponibles.html", vehicules=vehicules)
 
-
-@main.route("/reservation/<int:vehicule_id>")
-def reservation_page(vehicule_id):
-    v = Vehicule.query.get_or_404(vehicule_id)
+# ✅ vehicule_id devient optionnel pour supporter :
+# - /reservation            (formulaire rapide sans véhicule)
+# - /reservation/<id>       (réservation d’un véhicule précis)
+@main.route("/reservation", methods=["GET", "POST"])
+@main.route("/reservation/<int:vehicule_id>", methods=["GET", "POST"])
+def reservation_page(vehicule_id=None):
+    vehicule = Vehicule.query.get_or_404(vehicule_id) if vehicule_id is not None else None
     google_key = current_app.config.get("GOOGLE_MAPS_KEY")
-    return render_template("reservation.html", vehicule=v, form=ReservationForm(), google_key=google_key)
 
+    # Données éventuelles provenant de la barre de réservation rapide (GET)
+    quick = {
+        "depart": request.args.get("depart"),
+        "arrivee": request.args.get("arrivee"),
+        "date_": request.args.get("date"),
+        "heure": request.args.get("heure"),
+        "passagers": request.args.get("passagers"),
+    }
+
+    form = ReservationForm()
+    return render_template("reservation.html", vehicule=vehicule, form=form,
+                           google_key=google_key, **quick)
 
 @main.route("/reservation/<int:vehicule_id>/recap", methods=["POST"])
 def reservation_recap(vehicule_id):
     v = Vehicule.query.get_or_404(vehicule_id)
     form = ReservationForm()
 
-    # Récupération des champs
     data = {k: (request.form.get(k) or "").strip() for k in [
         "client_nom", "client_email", "client_telephone", "date_heure", "vol_info",
         "adresse_depart", "adresse_arrivee", "nb_passagers", "nb_valises_23kg",
         "nb_valises_10kg", "nb_sieges_bebe", "poids_enfants", "paiement", "commentaires"
     ]}
 
-    # ==== VALIDATIONS (conserve celles que tu avais) ====
+    # Validations de base
     client_email = data.get("client_email", "")
     if not data["client_nom"] or not client_email or "@" not in client_email:
         flash("Merci de remplir un nom et une adresse email valide.", "danger")
         return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
-
     if not data["adresse_depart"] or not data["adresse_arrivee"]:
         flash("Merci de remplir les adresses de départ et d'arrivée.", "danger")
         return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
 
-    # (Optionnel) vérif date si tu veux dès le récap :
-    # if not parse_datetime_local(data.get("date_heure")):
-    #     flash("Format de date/heure invalide.", "danger")
-    #     return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
-
-    # ==== ✅ SAUVEGARDE BROUILLON EN SESSION ====
+    # Sauvegarde brouillon en session
     drafts = session.get("reservation_drafts", {})
     drafts[str(vehicule_id)] = data
     session["reservation_drafts"] = drafts
 
-    # Affichage du récap
     return render_template("fiche_vehicule.html", vehicule=v, data=data, form=form)
-
-    
-    # VALIDATION RENFORCÉE
-    client_email = data.get("client_email", "").strip()
-    if not data["client_nom"] or not client_email or "@" not in client_email:
-        flash("Merci de remplir un nom et une adresse email valide.", "danger")
-        return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
-    
-    if not data["adresse_depart"] or not data["adresse_arrivee"]:
-        flash("Merci de remplir les adresses de départ et d'arrivée.", "danger")
-        return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
-    
-    return render_template("fiche_vehicule.html", vehicule=v, data=data, form=form)
-
 
 @main.route("/reserver/<int:vehicule_id>", methods=["POST"])
 def reserver_vehicule(vehicule_id):
     v = Vehicule.query.get_or_404(vehicule_id)
 
-    # Collecte et VALIDATION RENFORCÉE
     data = {k: request.form.get(k) for k in [
         "client_nom", "client_email", "client_telephone", "date_heure", "vol_info",
         "adresse_depart", "adresse_arrivee", "nb_passagers", "nb_valises_23kg",
         "nb_valises_10kg", "nb_sieges_bebe", "poids_enfants", "paiement", "commentaires"
     ]}
 
-    # VALIDATION STRICTE DES EMAILS
     client_email = (data.get("client_email") or "").strip()
     if not data["client_nom"] or not client_email:
         flash("Erreur : nom et email sont obligatoires.", "danger")
         return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
-    
     if "@" not in client_email or "." not in client_email.split("@")[-1]:
         flash("Veuillez fournir une adresse email valide.", "danger")
         return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
 
-    # Date/heure
     dt = parse_datetime_local(data.get("date_heure"))
     if not dt:
         flash("Format de date/heure invalide.", "danger")
         return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
 
-    # Conversions numériques
     nb_passagers   = to_int(data.get("nb_passagers"), default=1)
     nb_v23         = to_int(data.get("nb_valises_23kg"), default=0)
     nb_v10         = to_int(data.get("nb_valises_10kg"), default=0)
     nb_sieges_bebe = to_int(data.get("nb_sieges_bebe"), default=0)
     poids_enfants  = (data.get("poids_enfants") or "").strip() or None
 
-    # Création + commit
     try:
         r = Reservation(
             vehicule_id=vehicule_id,
             client_nom=(data.get("client_nom") or "").strip(),
-            client_email=client_email,  # Utiliser la version validée
+            client_email=client_email,
             client_telephone=(data.get("client_telephone") or "").strip(),
             date_heure=dt,
             vol_info=(data.get("vol_info") or "").strip(),
@@ -401,16 +350,12 @@ def reserver_vehicule(vehicule_id):
         )
         db.session.add(r)
         db.session.commit()
-        
-        # LOG pour débogage
         current_app.logger.info(f"✅ Réservation créée: ID {r.id}, Email: {r.client_email}")
-        
     except Exception as e:
         current_app.logger.exception(f"Erreur DB réservation: {e}")
         flash("Une erreur est survenue lors de l'enregistrement. Réessayez.", "danger")
         return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
 
-    # Email admin (SendGrid) - AVEC VALIDATION
     admin_email = current_app.config.get("ADMIN_EMAIL") or os.getenv("ADMIN_EMAIL")
     if admin_email and "@" in admin_email:
         try:
@@ -432,19 +377,13 @@ Poids enfants : {r.poids_enfants or '-'}
 Paiement : {r.paiement}
 Commentaires : {r.commentaires or '-'}
 """
-            send_via_sendgrid_async(
-                admin_email,
-                "Nouvelle réservation - DS Travel",
-                body_admin,
-            )
-            current_app.logger.info(f"📧 Email admin envoyé à {admin_email}")
+            send_via_sendgrid_async(admin_email, "Nouvelle réservation - DS Travel", body_admin)
         except Exception as e:
             current_app.logger.error(f"Erreur email admin (SendGrid) : {e}")
             flash("Réservation enregistrée mais l'e-mail admin n'a pas pu partir.", "warning")
     else:
         current_app.logger.warning("ADMIN_EMAIL non configuré - pas d'email admin envoyé")
 
-    # Email client (SendGrid) - AVEC VALIDATION RENFORCÉE
     if r.client_email and "@" in r.client_email:
         try:
             body_client = f"""
@@ -459,42 +398,26 @@ Date & Heure : {r.date_heure.strftime('%Y-%m-%d %H:%M')}
 Merci d'avoir choisi DS Travel.
 Nous vous recontacterons pour confirmer votre réservation.
 """
-            send_via_sendgrid_async(
-                r.client_email,
-                "Confirmation de votre réservation - DS Travel",
-                body_client,
-            )
-            current_app.logger.info(f"📧 Email client envoyé à {r.client_email}")
+            send_via_sendgrid_async(r.client_email, "Confirmation de votre réservation - DS Travel", body_client)
         except Exception as e:
             current_app.logger.error(f"Erreur email client (SendGrid) : {e}")
             flash("Réservation enregistrée mais l'e-mail de confirmation n'a pas pu partir.", "warning")
     else:
         current_app.logger.warning(f"Email client invalide: {r.client_email} - pas d'email de confirmation")
 
-    # Normalisation pour affichage
-    data["date_heure"] = r.date_heure.strftime("%Y-%m-%d %H:%M")
-    data["nb_passagers"] = str(r.nb_passagers)
-    data["nb_valises_23kg"] = str(r.nb_valises_23kg or 0)
-    data["nb_valises_10kg"] = str(r.nb_valises_10kg or 0)
-    data["nb_sieges_bebe"] = str(r.nb_sieges_bebe or 0)
-    data["poids_enfants"] = r.poids_enfants or "-"
-
     flash("Réservation enregistrée, nous vous contacterons.", "success")
     return redirect(url_for("main.confirmation_reservation", reservation_id=r.id))
 
-
-
+# GET direct -> renvoie sur la page réservation du véhicule
 @main.route("/reserver/<int:vehicule_id>", methods=["GET"])
 def reserver_vehicule_get(vehicule_id):
     return redirect(url_for("main.reservation_page", vehicule_id=vehicule_id))
+
 @main.route("/reservation/confirmation/<int:reservation_id>")
 def confirmation_reservation(reservation_id):
-    """Affiche la page de confirmation de réservation"""
     r = Reservation.query.get_or_404(reservation_id)
     v = Vehicule.query.get_or_404(r.vehicule_id)
     return render_template("confirmation.html", r=r, vehicule=v)
-
-
 
 # ========================
 # Administration des réservations
@@ -504,7 +427,6 @@ def confirmation_reservation(reservation_id):
 def reservations_admin():
     r = Reservation.query.order_by(Reservation.date_heure.desc()).all()
     return render_template("admin_reservations.html", reservations=r)
-
 
 @main.route("/admin/reservation/valider/<int:id>")
 @admin_required
@@ -516,7 +438,6 @@ def valider_reservation(id):
     flash("Réservation confirmée.", "success")
     return redirect(url_for("main.reservations_admin"))
 
-
 @main.route("/admin/reservation/annuler/<int:id>")
 @admin_required
 def annuler_reservation(id):
@@ -527,13 +448,11 @@ def annuler_reservation(id):
     flash("Réservation annulée.", "warning")
     return redirect(url_for("main.reservations_admin"))
 
-
 @main.route("/admin/reservation/edit/<int:id>", methods=["GET", "POST"])
 @admin_required
 def edit_reservation(id):
     flash("Page de modification à implémenter.", "info")
     return redirect(url_for("main.reservations_admin"))
-
 
 @main.route("/admin/reservation/terminer/<int:id>")
 @admin_required
@@ -544,7 +463,6 @@ def terminer_reservation(id):
     flash("Réservation terminée.", "success")
     return redirect(url_for("main.reservations_admin"))
 
-
 @main.route("/admin/reservation/delete/<int:id>")
 @admin_required
 def delete_reservation(id):
@@ -553,7 +471,6 @@ def delete_reservation(id):
     db.session.commit()
     flash("Réservation supprimée.", "success")
     return redirect(url_for("main.reservations_admin"))
-
 
 # ========================
 # Tarifs (Forfaits et Règles)
@@ -569,11 +486,8 @@ def tarifs_admin():
         doublon = TarifForfait.query.filter(
             or_(
                 and_(TarifForfait.depart == depart, TarifForfait.arrivee == arrivee),
-                and_(
-                    TarifForfait.bidirectionnel.is_(True),
-                    TarifForfait.depart == arrivee,
-                    TarifForfait.arrivee == depart,
-                ),
+                and_(TarifForfait.bidirectionnel.is_(True),
+                     TarifForfait.depart == arrivee, TarifForfait.arrivee == depart),
             )
         ).first()
         if doublon:
@@ -616,7 +530,6 @@ def tarifs_admin():
         regles=regles,
     )
 
-
 @main.route("/admin/tarifs/forfait/delete/<int:id>")
 @admin_required
 def delete_tarif_forfait(id):
@@ -625,7 +538,6 @@ def delete_tarif_forfait(id):
     db.session.commit()
     flash("Forfait supprimé.", "success")
     return redirect(url_for("main.tarifs_admin"))
-
 
 @main.route("/admin/tarifs/regle/delete/<int:id>")
 @admin_required
@@ -636,7 +548,6 @@ def delete_tarif_regle(id):
     flash("Règle supprimée.", "success")
     return redirect(url_for("main.tarifs_admin"))
 
-
 @main.route("/admin/tarifs/forfait/toggle/<int:id>")
 @admin_required
 def toggle_tarif_forfait(id):
@@ -646,7 +557,6 @@ def toggle_tarif_forfait(id):
     flash("Statut du forfait modifié.", "info")
     return redirect(url_for("main.tarifs_admin"))
 
-
 @main.route("/admin/tarifs/regle/toggle/<int:id>")
 @admin_required
 def toggle_tarif_regle(id):
@@ -655,7 +565,6 @@ def toggle_tarif_regle(id):
     db.session.commit()
     flash("Statut de la règle modifié.", "info")
     return redirect(url_for("main.tarifs_admin"))
-
 
 # ========================
 # Estimation de trajet (POST form)
@@ -673,11 +582,8 @@ def estimation_trajet():
             TarifForfait.actif.is_(True),
             or_(
                 and_(TarifForfait.depart == depart, TarifForfait.arrivee == arrivee),
-                and_(
-                    TarifForfait.bidirectionnel.is_(True),
-                    TarifForfait.depart == arrivee,
-                    TarifForfait.arrivee == depart,
-                ),
+                and_(TarifForfait.bidirectionnel.is_(True),
+                     TarifForfait.depart == arrivee, TarifForfait.arrivee == depart),
             ),
         )
     ).first()
@@ -687,12 +593,13 @@ def estimation_trajet():
         temps_min = distance_km * 1.2
         tarif = f"{forfait.prix_cfa:,.0f} F CFA"
     else:
+        # NOTE: get_distance_and_time doit exister dans ton projet
         regle = TarifRegle.query.filter_by(actif=True).first()
         if not regle:
             flash("Aucun tarif disponible.", "warning")
             return redirect(url_for("main.home"))
         try:
-            distance_km, temps_min = get_distance_and_time(depart, arrivee)
+            distance_km, temps_min = get_distance_and_time(depart, arrivee)  # noqa
         except Exception as e:
             flash(f"Erreur calcul distance : {e}", "danger")
             return redirect(url_for("main.home"))
@@ -719,7 +626,6 @@ def estimation_trajet():
         tarif=tarif,
     )
 
-
 # ========================
 # Calcul AJAX (JSON)
 # ========================
@@ -736,11 +642,8 @@ def calculer_tarif():
             TarifForfait.actif.is_(True),
             or_(
                 and_(TarifForfait.depart == depart, TarifForfait.arrivee == arrivee),
-                and_(
-                    TarifForfait.bidirectionnel.is_(True),
-                    TarifForfait.depart == arrivee,
-                    TarifForfait.arrivee == depart,
-                ),
+                and_(TarifForfait.bidirectionnel.is_(True),
+                     TarifForfait.depart == arrivee, TarifForfait.arrivee == depart),
             ),
         )
     ).first()
@@ -754,7 +657,7 @@ def calculer_tarif():
         if not regle:
             return jsonify({"error": "Aucun tarif disponible"}), 400
         try:
-            distance_km, temps_min = get_distance_and_time(depart, arrivee)
+            distance_km, temps_min = get_distance_and_time(depart, arrivee)  # noqa
         except Exception as e:
             return jsonify({"error": f"Erreur distance : {e}"}), 500
         prix = regle.base + regle.prix_km * distance_km
@@ -774,7 +677,6 @@ def calculer_tarif():
         "tarif": f"{prix:,.0f} F CFA",
     })
 
-
 # ========================
 # Debug
 # ========================
@@ -786,10 +688,8 @@ def debug_routes():
         lines.append(f"{methods:20s} {rule.endpoint:30s} {rule.rule}")
     return "<pre>" + "\n".join(sorted(lines)) + "</pre>"
 
-
 @main.route("/debug/sendgrid")
 def debug_sendgrid():
-    """Test d'envoi via SendGrid."""
     try:
         send_via_sendgrid_async(
             os.getenv("ADMIN_EMAIL"),
@@ -801,10 +701,8 @@ def debug_sendgrid():
         current_app.logger.exception("Echec test SendGrid")
         return f"❌ Erreur SendGrid : {e}", 500
 
-
 @main.route("/debug/sendgrid-verbose")
 def debug_sendgrid_verbose():
-    """Test détaillé de SendGrid (affiche le statut exact)."""
     try:
         api_key = os.getenv("SENDGRID_API_KEY")
         sender = os.getenv("MAIL_DEFAULT_SENDER") or os.getenv("MAIL_USERNAME")
@@ -819,38 +717,28 @@ def debug_sendgrid_verbose():
 
         r = requests.post(
             "https://api.sendgrid.com/v3/mail/send",
-            headers={
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            },
-            json=payload,
-            timeout=10,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json=payload, timeout=10
         )
-
         body = r.text.strip()
         return (
             f"Status: {r.status_code}\n"
             f"Response: {body if body else '<no body>'}\n"
             f"From: {sender}\nTo: {to_email}\n"
             f"SENDGRID_API_KEY: {'SET' if api_key else 'MISSING'}\n",
-            200,
-            {"Content-Type": "text/plain"},
+            200, {"Content-Type": "text/plain"},
         )
-
     except Exception as e:
         return f"Exception: {e}", 500, {"Content-Type": "text/plain"}
 
-
 @main.route("/debug/key")
 def debug_key():
-    """Vérifie la longueur et la forme de la clé API SendGrid."""
     k = os.getenv("SENDGRID_API_KEY")
-    return (
-        f"len={len(k) if k else 0}\nrepr={repr(k)}\n",
-        200,
-        {"Content-Type": "text/plain"},
-    )
-    
+    return (f"len={len(k) if k else 0}\nrepr={repr(k)}\n", 200, {"Content-Type": "text/plain"})
+
+# ========================
+# Contact (alias pour compat templates)
+# ========================
 @main.route("/contact", methods=["GET", "POST"])
 def contact_post():
     form = ContactForm()
@@ -859,8 +747,6 @@ def contact_post():
         email = form.email.data.strip()
         sujet = form.sujet.data.strip()
         message = form.message.data.strip()
-
-        # Envoi d'email (tu peux garder ta fonction existante)
         try:
             corps_admin = f"""📩 Nouveau message SD Travel
 
@@ -871,11 +757,7 @@ Sujet : {sujet}
 Message :
 {message}
 """
-            send_via_sendgrid_async(
-                os.getenv("ADMIN_EMAIL"),
-                f"Message du formulaire – {nom}",
-                corps_admin
-            )
+            send_via_sendgrid_async(os.getenv("ADMIN_EMAIL"), f"Message du formulaire – {nom}", corps_admin)
 
             corps_client = f"""Bonjour {nom},
 
@@ -887,13 +769,18 @@ Merci de nous avoir contactés.
 — Équipe SD Travel
 """
             send_via_sendgrid_async(email, "Confirmation – SD Travel", corps_client)
-
             flash(" Message envoyé avec succès. Nous vous répondrons sous peu.", "success")
         except Exception as e:
             current_app.logger.error(f"Erreur envoi contact : {e}")
             flash(" Erreur lors de l’envoi. Veuillez réessayer.", "danger")
-
         return redirect(url_for("main.contact_post"))
-
     return render_template("contact.html", form=form)
 
+# Alias optionnel si ton template appelle main.contact_page
+@main.route("/contactez-nous", methods=["GET", "POST"])
+def contact_page():
+    return contact_post()
+@main.route("/cgv")
+def cgv():
+    """Page des Conditions Générales de Vente"""
+    return render_template("cgv.html", current_year=datetime.now().year)

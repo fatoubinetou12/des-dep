@@ -12,7 +12,7 @@ app = create_app()
 # 🔹 Créer les tables si besoin
 with app.app_context():
     db.create_all()
-    print("✅ Tables créées :", inspect(db.engine).get_table_names())
+    print(" Tables créées :", inspect(db.engine).get_table_names())
 
 if __name__ == "__main__":
     # 🔹 Mode debug = voir les logs dans le terminal

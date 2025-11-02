@@ -3,359 +3,356 @@
 
 {% block content %}
 
-<section class="text-white fullscreen-banner">
-  <!-- Image en arrière-plan -->
-  <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70"
-       alt="voiture de luxe"
-       style="position: absolute; top: 0; left: 0; width: 100%; height: 80vh; object-fit: cover; object-position: center; z-index: 1; filter: brightness(70%);">
+<!-- ===================== STYLES SPÉCIFIQUES À LA PAGE ===================== -->
+<style>
+  /* Palette douce & premium */
+  :root{
+    --green:#20c997;           /* success modern */
+    --green-600:#17a589;
+    --green-soft:#e9fbf5;
+    --ink:#14222b;             /* text principal */
+    --ink-2:#33434f;           /* text secondaire */
+    --muted:#6c7a86;
+    --bg:#f7faf9;
+    --card:#ffffff;
+    --shadow:0 8px 24px rgba(16,24,40,.06);
+  }
 
-  <div style="position: absolute; top: 0; left: 0; width: 100%; height: 80vh;
-            background-color: rgba(0, 0, 0, 0.6); z-index: 2;"></div>
+  /* Nav transparente sur le hero */
+  .navbar.navbar-hero{ 
+    position: absolute; inset-inline:0; top:0; z-index:30; 
+    background: linear-gradient(180deg, rgba(10,20,20,.55), rgba(10,20,20,.0));
+    box-shadow:none !important;
+  }
+  .navbar.navbar-hero .nav-link, .navbar.navbar-hero .navbar-brand{ color:#fff !important; }
 
-  <!-- Contenu centré -->
-  <div class="d-flex flex-column justify-content-center align-items-center text-center"
-       style="position: relative; z-index: 3; height: 100%; padding-top: 80px;">
-    <h1 class="display-3 fw-bold mb-3 animate__animated animate__fadeInDown">
-      Voyagez avec style et sérénité
+  /* ---------- HERO ---------- */
+  .hero-banner{ position:relative; min-height:84vh; display:grid; place-items:center; color:#fff; overflow:hidden; }
+  .hero-banner::before{ /* image de fond */
+    content:""; position:absolute; inset:0; z-index:1;
+    background:url("{{ url_for('static', filename='images/background.jpeg') }}") center/cover no-repeat; 
+    filter:brightness(.65);
+  }
+  .hero-banner::after{ /* léger grain + dégradé bas */
+    content:""; position:absolute; inset:0; z-index:2;
+    background: radial-gradient(1200px 500px at 50% 10%, rgba(255,255,255,.06), transparent 60%),
+                linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,.35));
+  }
+  .hero-inner{ position:relative; z-index:3; max-width:900px; padding: 7rem 1rem 4rem; }
+  .hero-chip{ display:inline-flex; align-items:center; gap:.5rem; padding:.4rem .75rem; border-radius:999px; 
+              background:rgba(32,201,151,.15); border:1px solid rgba(255,255,255,.35); backdrop-filter: blur(6px);
+              font-weight:600; margin-bottom:1rem; }
+  .hero-chip i{ font-size:1rem; }
+  .hero-title{ font-size: clamp(1.8rem, 1rem + 3vw, 3rem); line-height:1.12; }
+  .hero-subtitle{ max-width:740px; margin-inline:auto; color:#e7fffa; opacity:.92; }
+
+  /* ---------- SECTIONS TITRES ---------- */
+  .section-title{ position:relative; display:inline-block; }
+  .section-title::after{ content:""; position:absolute; left:50%; transform:translateX(-50%);
+    bottom:-10px; width:90px; height:3px; background:var(--green); border-radius:3px; opacity:.75; }
+
+  /* ---------- CARDS PRESTATIONS ---------- */
+  .card-prestation{ background:var(--card); border-radius:1.25rem; box-shadow:var(--shadow); transition:transform .25s ease, box-shadow .25s ease; }
+  .card-prestation:hover{ transform: translateY(-4px); box-shadow:0 16px 32px rgba(16,24,40,.10); }
+  .badge.bg-success-subtle{ background: var(--green-soft) !important; border:1px solid #b7f0df !important; }
+
+  /* ---------- SERVICES À BORD ---------- */
+  .service-tile{ background:var(--card); border-radius:1rem; box-shadow:var(--shadow); padding:1.25rem; font-weight:600; }
+  .service-tile i{ font-size:1.5rem; margin-bottom:.25rem; color:var(--green-600); }
+  .service-tile p{ margin:0; color:var(--ink-2); }
+
+  /* ---------- FLOTTE ---------- */
+  .card-vehicule{ border-radius:1.25rem; overflow:hidden; background:var(--card); box-shadow:var(--shadow); }
+  .card-vehicule img{ width:100%; aspect-ratio: 16/10; object-fit:cover; display:block; }
+  .badge-eco{ background: var(--green-soft); color:var(--green-600); border:1px solid #b7f0df; border-radius:.75rem; padding:.35rem .6rem; font-weight:700; }
+  .badge-new{ background:#ffe8a3; color:#735b00; border-radius:.75rem; padding:.35rem .6rem; font-weight:700; }
+
+  /* ---------- TRANSFERTS POPULAIRES ---------- */
+  .popular-card{ position:relative; border-radius:1rem; overflow:hidden; box-shadow:var(--shadow);
+    background: linear-gradient(135deg, var(--green) 0%, #5fd0b4 70%); }
+  .popular-card .card-body{ padding:2rem 1.25rem; }
+  .popular-card .card-title{ line-height:1.25; }
+
+  /* ---------- FAQ (accordion bootstrap) ---------- */
+  .accordion-button{ font-weight:600; }
+
+  /* ---------- WHATSAPP FLOAT ---------- */
+  .whatsapp-float{ position:fixed; right:18px; bottom:20px; background:#25D366; color:#fff; width:54px; height:54px;
+    border-radius:50%; display:grid; place-items:center; font-size:1.6rem; box-shadow:0 8px 24px rgba(0,0,0,.18); z-index:50;
+    transition: transform .2s ease; }
+  .whatsapp-float:hover{ transform: translateY(-2px); color:#fff; }
+
+  /* ---------- UTILITAIRES ---------- */
+  .text-success{ color:var(--green-600) !important; }
+  .bg-light{ background:var(--bg) !important; }
+  .lead{ color:var(--muted); }
+</style>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero-banner text-white">
+  <div class="hero-inner text-center">
+    
+
+    <h1 class="hero-title fw-bold mb-3">
+      Des trajets confortables, sûrs et respectueux de l’environnement
     </h1>
-    <p class="lead mb-4 animate__animated animate__fadeInUp animate__delay-1s">
-      Service VTC premium à Dakar et vers l'aéroport AIBD
+
+    <p class="hero-subtitle mb-4">
+      <div class="hero-chip">
+      <i class="bi bi-leaf-fill"></i>
+      <span>Flotte hybride & récente – moins d’émissions de CO₂</span>
+    </div>
     </p>
 
-   
-
-    <!-- Bouton ancre flotte (garde-le si tu veux) -->
-    <div class="mt-3">
-      <a href="#notre-flotte" class="btn btn-outline-light btn-lg px-5 fw-bold">
-        Voir la flotte
-      </a>
-    </div>
+    <a href="#notre-flotte" class="btn btn-outline-light btn-lg px-5 fw-bold">
+      Voir la flotte
+    </a>
   </div>
 </section>
 
-
-<!-- ======== Sections existantes ======== -->
-<div class="container text-center py-5 px-3"></div>
-
-<div class="container text-center py-5">
-  <!-- ======= Pourquoi choisir DS TRAVEL ======= -->
- <section class="py-5 bg-light">
+<!-- ===================== POURQUOI DS TRAVEL ===================== -->
+<section class="py-5 bg-light">
   <div class="container">
-    <h2 class="text-center mb-4 fw-bold">
-      Pourquoi choisir <span class="text-success">DS TRAVEL</span> ?
-    </h2>
-    <p class="text-center mb-5 lead">
-      Forts de notre expérience, nous garantissons un service de qualité,
-      alliant ponctualité, sécurité et confort. Notre priorité est votre satisfaction.
-    </p>
+    <h2 class="text-center mb-4 fw-bold section-title">Pourquoi choisir <span class="text-success">DS TRAVEL</span> ?</h2>
+    <p class="text-center mb-5 lead">Ponctualité, sécurité et confort — avec un engagement éco‑responsable.</p>
 
-    <!-- Grille uniforme 3 x 3 -->
     <div class="row row-cols-1 row-cols-md-3 g-4 align-items-stretch">
+      {% set items = [
+        {"badge":"Services principaux","icon":"airplane","title":"Transferts aéroport AIBD","text":"Réservation simple et prise en charge fiable."},
+        {"badge":"Services principaux","icon":"signpost-split","title":"Trajets longue distance","text":"Déplacements à travers tout le Sénégal."},
+        {"badge":"Services principaux","icon":"briefcase","title":"Déplacements professionnels","text":"Idéal pour vos RDV, congrès et événements."},
+        {"badge":"Nos valeurs","icon":"clock-history","title":"Ponctualité","text":"Toujours à l’heure."},
+        {"badge":"Nos valeurs","icon":"heart","title":"Service personnalisé","text":"Trajets adaptés à vos besoins."},
+        {"badge":"Nos valeurs","icon":"chat-dots","title":"Assistance 24/7","text":"Support permanent."},
+        {"badge":"Nos engagements","icon":"cash-coin","title":"Tarifs clairs","text":"Prix convenus, sans frais cachés."},
+        {"badge":"Nos engagements","icon":"shield-lock","title":"Sécurité","text":"Chauffeurs pros, véhicules vérifiés."},
+        {"badge":"Nos engagements","icon":"cloud-sun","title":"Confort","text":"Véhicules récents & climatisés."}
+      ] %}
 
-      <!-- Services principaux -->
+      {% for it in items %}
       <div class="col">
-        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
-          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Services principaux</span>
-          <div class="text-warning fs-1 mb-2"><i class="bi bi-airplane"></i></div>
-          <h5 class="mb-2">Transferts aéroport AIBD</h5>
-          <p class="text-muted mb-0">Réservez votre chauffeur pour l'AIBD et les trajets longue distance.</p>
+        <div class="card-prestation h-100 p-4 text-center d-flex flex-column">
+          <span class="badge bg-success-subtle text-success border align-self-center mb-2">{{ it.badge }}</span>
+          <div class="text-warning fs-1 mb-2"><i class="bi bi-{{ it.icon }}"></i></div>
+          <h5 class="mb-2">{{ it.title }}</h5>
+          <p class="text-muted mb-0">{{ it.text }}</p>
         </div>
       </div>
-
-      <div class="col">
-        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
-          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Services principaux</span>
-          <div class="text-warning fs-1 mb-2"><i class="bi bi-signpost-split"></i></div>
-          <h5 class="mb-2">Trajets longue distance</h5>
-          <p class="text-muted mb-0">Déplacements dans tout le Sénégal, y compris les villes éloignées.</p>
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
-          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Services principaux</span>
-          <div class="text-warning fs-1 mb-2"><i class="bi bi-briefcase"></i></div>
-          <h5 class="mb-2">Déplacements professionnels</h5>
-          <p class="text-muted mb-0">Idéal pour vos RDV d'affaires, congrès et événements officiels.</p>
-        </div>
-      </div>
-
-      <!-- Nos valeurs -->
-      <div class="col">
-        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
-          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos valeurs</span>
-          <div class="text-warning fs-1 mb-2"><i class="bi bi-clock-history"></i></div>
-          <h5 class="mb-2">Ponctualité</h5>
-          <p class="text-muted mb-0">Toujours à l'heure pour vos déplacements importants.</p>
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
-          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos valeurs</span>
-          <div class="text-warning fs-1 mb-2"><i class="bi bi-heart"></i></div>
-          <h5 class="mb-2">Service personnalisé</h5>
-          <p class="text-muted mb-0">Chaque trajet est adapté à vos besoins spécifiques.</p>
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
-          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos valeurs</span>
-          <div class="text-warning fs-1 mb-2"><i class="bi bi-chat-dots"></i></div>
-          <h5 class="mb-2">Assistance 24/7</h5>
-          <p class="text-muted mb-0">Support permanent pour vos réservations et questions.</p>
-        </div>
-      </div>
-
-      <!-- Nos engagements -->
-      <div class="col">
-        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
-          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos engagements</span>
-          <div class="text-warning fs-1 mb-2"><i class="bi bi-cash-coin"></i></div>
-          <h5 class="mb-2">Tarifs clairs et fixes</h5>
-          <p class="text-muted mb-0">Prix convenu à l'avance, sans frais cachés.</p>
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
-          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos engagements</span>
-          <div class="text-warning fs-1 mb-2"><i class="bi bi-shield-lock"></i></div>
-          <h5 class="mb-2">Sécurité</h5>
-          <p class="text-muted mb-0">Chauffeurs pro, véhicules vérifiés et assurés.</p>
-        </div>
-      </div>
-
-      <div class="col">
-        <div class="h-100 p-4 text-center bg-white rounded-4 shadow-sm d-flex flex-column">
-          <span class="badge bg-success-subtle text-success border align-self-center mb-2">Nos engagements</span>
-          <div class="text-warning fs-1 mb-2"><i class="bi bi-cloud-sun"></i></div>
-          <h5 class="mb-2">Confort optimal</h5>
-          <p class="text-muted mb-0">Véhicules récents, climatisés, trajets agréables.</p>
-        </div>
-      </div>
-
+      {% endfor %}
     </div>
   </div>
 </section>
 
-  <!-- ======= Notre flotte de véhicules ======= -->
-  <section class="container py-5" id="notre-flotte">
-    <h2 class="text-center mb-4">Notre flotte de véhicules</h2>
-    <p class="text-center mb-5 lead">
-      Des véhicules récents, confortables et parfaitement entretenus pour répondre à tous vos besoins.
+<!-- ===================== SERVICES À BORD ===================== -->
+<section class="py-5">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-3 section-title">Services à bord</h2>
+    <p class="text-muted mb-5">Tout pour un trajet connecté, confortable et serein.</p>
+
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3">
+      {% set services = [
+        ("geo-alt","Géolocalisation"),
+        ("wifi","Wi‑Fi à bord"),
+        ("droplet","Bouteilles d’eau"),
+        ("lightning-charge","Chargeurs"),
+        ("snow","Climatisation"),
+        ("shield-check","Sécurité")
+      ] %}
+      {% for ic, label in services %}
+      <div class="col"><div class="service-tile"><i class="bi bi-{{ ic }}"></i><p>{{ label }}</p></div></div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+
+<!-- ===================== AVIS CLIENTS ===================== -->
+<section class="py-5 bg-light">
+  <div class="container text-center">
+    <h2 class="fw-bold mb-4 section-title">Ce que disent nos clients</h2>
+    <p class="lead text-muted mb-5">
+      La satisfaction de nos passagers est notre plus belle récompense.  
+      Merci pour votre confiance au quotidien 
     </p>
 
-    <div class="row justify-content-center">
-      {% for vehicule in vehicules[:6] %}
-      <div class="col-md-4 mb-4">
-        <div class="card shadow-sm h-100 border-0 rounded-3">
-          <!-- Photo du véhicule (fallback si image manquante) -->
-          <img src="{{ url_for('static', filename=vehicule.image or 'images/placeholder-vehicule.jpg') }}"
-               class="card-img-top rounded-top"
-               alt="Photo de {{ vehicule.marque }} {{ vehicule.modele }}"
-               style="height:220px; object-fit:cover;">
-
-          <div class="card-body">
-            <h4 class="card-title text-success mb-3">
-              {{ vehicule.marque }} {{ vehicule.modele }}
-            </h4>
-
-            <ul class="list-unstyled mb-4">
-              <li>
-                <i class="bi bi-people-fill text-warning me-2"></i>
-                <strong>Passagers :</strong> {{ vehicule.capacite_passagers }}
-              </li>
-              <li>
-                <i class="bi bi-suitcase text-warning me-2"></i>
-                <strong>Valises :</strong> {{ vehicule.nb_valises }}
-              </li>
-            </ul>
-
-            <div class="d-flex justify-content-between">
-              <button class="btn btn-outline-success w-50 me-2"
-                      data-bs-toggle="modal"
-                      data-bs-target="#vehiculeModal{{ vehicule.id }}">
-                Voir plus
-              </button>
-            </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="card p-4 shadow-sm border-0 h-100">
+          <div class="mb-2 text-warning fs-5">
+            ★★★★★
           </div>
+          <p>“Chauffeur ponctuel, voiture impeccable, trajet AIBD parfait.”</p>
+          <strong class="text-success">— Fatou D.</strong>
         </div>
       </div>
 
-      <!-- Modal détail véhicule -->
-      <div class="modal fade" id="vehiculeModal{{ vehicule.id }}" tabindex="-1"
-           aria-labelledby="vehiculeModalLabel{{ vehicule.id }}" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-          <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-              <h5 class="modal-title" id="vehiculeModalLabel{{ vehicule.id }}">
-                {{ vehicule.marque }} {{ vehicule.modele }}
-              </h5>
-              <button type="button" class="btn-close btn-close-white"
-                      data-bs-dismiss="modal" aria-label="Fermer"></button>
-            </div>
+      <div class="col-md-4">
+        <div class="card p-4 shadow-sm border-0 h-100">
+          <div class="mb-2 text-warning fs-5">
+            ★★★★★
+          </div>
+          <p>“Excellent service, communication fluide par WhatsApp. Très professionnel.”</p>
+          <strong class="text-success">— Mamadou K.</strong>
+        </div>
+      </div>
 
-            <div class="modal-body">
-              <div class="row g-4">
-                <div class="col-md-6">
-                  <img src="{{ url_for('static', filename=vehicule.image or 'images/placeholder-vehicule.jpg') }}"
-                       class="img-fluid rounded"
-                       alt="photo {{ vehicule.marque }} {{ vehicule.modele }}">
-                </div>
-                <div class="col-md-6">
-                  <ul class="list-unstyled">
-                    <li><strong>Immatriculation :</strong> {{ vehicule.immatriculation }}</li>
-                    <li><strong>Type :</strong> {{ vehicule.type }}</li>
-                    <li><strong>Caractéristiques techniques :</strong> {{ vehicule.caracteristiques_techniques }}</li>
-                    <li><strong>Passagers :</strong> {{ vehicule.capacite_passagers }}</li>
-                    <li><strong>Valises :</strong> {{ vehicule.nb_valises }}</li>
-                    <li><strong>Volume coffre (bagages) :</strong> {{ vehicule.volume_coffre_bagages }} L</li>
-                    <li><strong>Volume coffre (sièges rabattus) :</strong> {{ vehicule.volume_coffre_rabattus }} L</li>
-                    <li><strong>Sièges bébé :</strong> {{ vehicule.nb_sieges_bebe }}</li>
-                    <li><strong>Coffre de toit :</strong> {% if vehicule.coffre_de_toit %}Oui{% else %}Non{% endif %}</li>
-                  </ul>
-                </div>
+      <div class="col-md-4">
+        <div class="card p-4 shadow-sm border-0 h-100">
+          <div class="mb-2 text-warning fs-5">
+            ★★★★★
+          </div>
+          <p>“Service impeccable ! Réservation rapide et chauffeur très courtois. Je recommande vivement.”</p>
+          <strong class="text-success">— Aïcha S.</strong>
+        </div>
+      </div>
+    </div>
+
+    
+  </div>
+</section>
+
+<!-- ===================== NOTRE FLOTTE ===================== -->
+<section class="container py-5" id="notre-flotte">
+  <h2 class="fw-bold mb-4 section-title">Notre flotte de véhicules</h2>
+  <p class="text-center mb-5 lead">
+    Flotte majoritairement <strong>hybride</strong> et <strong>récente</strong> :
+    confort, sécurité et respect de l’environnement. Entretien suivi pour limiter les
+    <strong>émissions de CO₂</strong> et garantir des trajets sereins.
+  </p>
+
+  <div class="row g-4 justify-content-center">
+    {% for vehicule in vehicules[:6] %}
+    <div class="col-md-4">
+      <div class="card card-vehicule border-0 position-relative">
+        {% set is_hybride = (vehicule.type and 'hyb' in vehicule.type|lower)
+                            or (vehicule.caracteristiques_techniques and 'hyb' in vehicule.caracteristiques_techniques|lower)
+                            or (vehicule.is_hybride is defined and vehicule.is_hybride) %}
+        {% if is_hybride %}
+          <span class="badge badge-eco position-absolute top-0 start-0 m-2"><i class="bi bi-leaf me-1"></i>Hybride</span>
+        {% endif %}
+        {% if vehicule.annee and vehicule.annee|int >= 2022 %}
+          <span class="badge badge-new position-absolute top-0 end-0 m-2">Neuf</span>
+        {% endif %}
+
+        <img loading="lazy" src="{{ url_for('static', filename=vehicule.image or 'images/placeholder-vehicule.jpg') }}"
+             alt="{{ vehicule.marque }} {{ vehicule.modele }}">
+        <div class="card-body">
+          <h5 class="card-title fw-bold text-success mb-2">{{ vehicule.marque }} {{ vehicule.modele }}</h5>
+          <p class="small text-muted mb-3">
+            <i class="bi bi-people-fill me-1"></i>Passagers : {{ vehicule.capacite_passagers }}
+            &nbsp;·&nbsp;
+            <i class="bi bi-suitcase me-1"></i>Valises : {{ vehicule.nb_valises }}
+          </p>
+          <button class="btn btn-outline-success w-100" data-bs-toggle="modal" data-bs-target="#vehiculeModal{{ vehicule.id }}">
+            Détails & Réserver
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal détail véhicule -->
+    <div class="modal fade" id="vehiculeModal{{ vehicule.id }}" tabindex="-1" aria-labelledby="vehiculeModalLabel{{ vehicule.id }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title" id="vehiculeModalLabel{{ vehicule.id }}">{{ vehicule.marque }} {{ vehicule.modele }}</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <div class="row g-4">
+              <div class="col-md-6">
+                <img loading="lazy" src="{{ url_for('static', filename=vehicule.image or 'images/placeholder-vehicule.jpg') }}" class="img-fluid rounded" alt="photo {{ vehicule.marque }} {{ vehicule.modele }}">
+              </div>
+              <div class="col-md-6">
+                <ul class="list-unstyled">
+                  <li><strong>Immatriculation :</strong> {{ vehicule.immatriculation }}</li>
+                  <li><strong>Type :</strong> {{ vehicule.type }}</li>
+                  <li><strong>Caractéristiques :</strong> {{ vehicule.caracteristiques_techniques }}</li>
+                  <li><strong>Passagers :</strong> {{ vehicule.capacite_passagers }}</li>
+                  <li><strong>Valises :</strong> {{ vehicule.nb_valises }}</li>
+                  <li><strong>Volume coffre :</strong> {{ vehicule.volume_coffre_bagages }} L</li>
+                  <li><strong>Sièges bébé :</strong> {{ vehicule.nb_sieges_bebe }}</li>
+                  <li><strong>Coffre de toit :</strong> {% if vehicule.coffre_de_toit %}Oui{% else %}Non{% endif %}</li>
+                </ul>
               </div>
             </div>
-
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-              <a class="btn btn-success w-50"
-                 href="{{ url_for('main.reservation_page', vehicule_id=vehicule.id) }}">
-                 Réserver
-              </a>
-            </div>
           </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </section>
-
-  <!-- ======== Transferts Populaires ======== -->
-  <section class="container my-5">
-    <h2 class="text-center mb-4 fw-bold text-success">Transferts Populaires</h2>
-    <div class="row g-4">
-      {% for t in transferts_populaires %}
-      <div class="col-12 col-md-6 col-lg-3">
-        <div class="card text-white h-100 border-0 popular-card">
-          <div class="card-body text-center">
-            <h5 class="card-title fw-bold">
-              {{ t.depart }} <br> ⇄ <br> {{ t.arrivee }}
-            </h5>
-            <p class="card-text mt-3">
-              à partir de {{ '{:,.0f}'.format(t.prix_cfa) }} FCFA
-            </p>
-            {% if t.distance_km %}
-            <p class="mb-1 small">Distance : {{ t.distance_km }} km</p>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </section>
-
-  <style>
-    .popular-card {
-      background-color: #006400;
-      border-radius: 10px;
-      transition: transform .2s ease-in-out;
-    }
-    .popular-card:hover { transform: scale(1.03); }
-  </style>
-
-  <!-- Témoignages -->
-  <section class="bg-light py-5">
-    <div class="container text-center">
-      <h2 class="mb-4">Témoignages clients</h2>
-      <div class="row justify-content-center">
-        <div class="col-md-5">
-          <div class="bg-white shadow rounded p-4">
-            <p class="fst-italic">"Service exceptionnel ! Chauffeur ponctuel et très professionnel."</p>
-            <strong>- Amina D.</strong>
-          </div>
-        </div>
-        <div class="col-md-5 mt-4 mt-md-0">
-          <div class="bg-white shadow rounded p-4">
-            <p class="fst-italic">"Voiture impeccable et réservation ultra facile. Merci !"</p>
-            <strong>- Moussa K.</strong>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+            <a class="btn btn-success w-50" href="{{ url_for('main.reservation_page', vehicule_id=vehicule.id) }}">Réserver</a>
           </div>
         </div>
       </div>
     </div>
-  </section>
+    {% endfor %}
+  </div>
+</section>
 
-  <!-- ======== Section Transferts Clés ======== -->
-  <section class="transferts-section text-white d-flex align-items-center" style="position: relative; min-height:100vh;">
-    <img src="{{ url_for('static', filename='images/ba.jpg') }}"
-         alt="Transferts Sénégal"
-         style="position: absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:1;">
-    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.6); z-index:2;"></div>
-
-    <div class="container position-relative" style="z-index:3;">
-      <h2 class="fw-bold">Transferts</h2>
-      <h3 class="text-warning mb-4">Aéroport, Villes et Gares du Sénégal</h3>
-      <p class="mb-5 lead">
-        Avec DS Travel, profitez d'un service fiable et confortable à travers tout le Sénégal.
-        Que ce soit pour vos trajets depuis l'aéroport AIBD, vos déplacements vers les grandes villes,
-        ou vos voyages vers les parcs touristiques, nous vous garantissons ponctualité et sécurité.
-      </p>
-
-      <h4 class="fw-bold mb-4">Nos Transferts Clés</h4>
-      <div class="row text-center">
-        <div class="col-md-3 mb-3">
-          <div class="p-3 bg-dark bg-opacity-50 rounded">
-            <h3 class="text-warning">1</h3>
-            <p>Aéroport International AIBD</p>
-          </div>
-        </div>
-        <div class="col-md-3 mb-3">
-          <div class="p-3 bg-dark bg-opacity-50 rounded">
-            <h3 class="text-warning">5+</h3>
-            <p>Courses Réalisées avec Satisfaction</p>
-          </div>
-        </div>
-        <div class="col-md-3 mb-3">
-          <div class="p-3 bg-dark bg-opacity-50 rounded">
-            <h3 class="text-warning">14</h3>
-            <p>Régions Desservies</p>
-          </div>
-        </div>
-        <div class="col-md-3 mb-3">
-          <div class="p-3 bg-dark bg-opacity-50 rounded">
-            <h3 class="text-warning">10+</h3>
-            <p>Hôtels et Résidences Desservis</p>
-          </div>
+<!-- ===================== TRANSFERTS POPULAIRES ===================== -->
+<section class="container my-5">
+  <h2 class="text-center mb-4 fw-bold text-success section-title">Transferts populaires</h2>
+  <div class="row g-4">
+    {% for t in transferts_populaires %}
+    <div class="col-12 col-md-6 col-lg-3">
+      <div class="card text-white h-100 border-0 popular-card">
+        <div class="card-body text-center">
+          <h5 class="card-title fw-bold">{{ t.depart }} <br> ⇄ <br> {{ t.arrivee }}</h5>
+          <p class="card-text mt-3">à partir de {{ '{:,.0f}'.format(t.prix_cfa) }} FCFA</p>
+          {% if t.distance_km %}<p class="mb-1 small">Distance : {{ t.distance_km }} km</p>{% endif %}
         </div>
       </div>
     </div>
-  </section>
+    {% endfor %}
+  </div>
+</section>
 
-  <!-- Bouton WhatsApp flottant -->
-  <a href="https://wa.me/221764159999" class="whatsapp-float" target="_blank" aria-label="WhatsApp">
-    <i class="bi bi-whatsapp"></i>
-  </a>
-</div>
+<!-- ===================== FAQ ===================== -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center fw-bold mb-3 section-title">Questions fréquentes</h2>
+    <p class="text-center text-muted mb-4">Tout ce qu’il faut savoir avant de réserver.</p>
 
-<style>
-.whatsapp-float {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #25D366;
-  color: white;
-  border-radius: 50%;
-  padding: 16px;
-  font-size: 28px;
-  z-index: 1000;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  transition: all 0.3s ease;
-  text-decoration: none;
-}
-.whatsapp-float:hover { background-color: #1ebe5c; transform: scale(1.1); }
-.whatsapp-float i { vertical-align: middle; }
-</style>
+    <div class="accordion mx-auto" id="faq" style="max-width:900px;">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="q1">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#a1">Comment réserver un trajet ?</button>
+        </h2>
+        <div id="a1" class="accordion-collapse collapse show" data-bs-parent="#faq">
+          <div class="accordion-body">Réservez depuis l’accueil (« Voir la flotte ») ou la page réservation. Confirmation instantanée.</div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="q2">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a2">Proposez‑vous des sièges bébé ?</button>
+        </h2>
+        <div id="a2" class="accordion-collapse collapse" data-bs-parent="#faq">
+          <div class="accordion-body">Oui, sur demande lors de la réservation (selon disponibilité).</div>
+        </div>
+      </div>
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="q3">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#a3">Puis‑je modifier ou annuler ma réservation ?</button>
+        </h2>
+        <div id="a3" class="accordion-collapse collapse" data-bs-parent="#faq">
+          <div class="accordion-body">Oui, jusqu’à 12h avant le départ sans frais.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Bouton WhatsApp flottant -->
+<a href="https://wa.me/221764159999" class="whatsapp-float" target="_blank" aria-label="WhatsApp">
+  <i class="bi bi-whatsapp"></i>
+</a>
+
+<!-- ===================== SCRIPT NAVBAR HERO ===================== -->
+<script>
+  // Rend la navbar transparente sur le hero de cette page uniquement
+  document.addEventListener('DOMContentLoaded', function(){
+    const nav = document.querySelector('.navbar');
+    if(nav){ nav.classList.add('navbar-hero'); }
+  });
+</script>
+
 {% endblock %}

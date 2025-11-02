@@ -1,55 +1,47 @@
-/* ============================================
-   🌍 STYLE GLOBAL – DS TRAVEL
-============================================ */
+/* =============================== */
+/* 🌍 GLOBAL */
+/* =============================== */
+:root {
+  --green:#20c997;
+  --green-600:#17a589;
+  --green-soft:#e9fbf5;
+  --shadow:0 8px 24px rgba(16,24,40,.06);
+}
 body {
   font-family: 'Poppins', sans-serif;
-  padding-top: 72px; /* espace pour la navbar fixe */
   background-color: #f8f9fa;
   scroll-behavior: smooth;
 }
 
-/* ============================================
-   🟢 NAVBAR TRANSPARENTE → VERTE AU SCROLL
-============================================ */
+/* =============================== */
+/* 🟢 NAVBAR */
+/* =============================== */
 #mainNav {
-  transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease;
   z-index: 1030;
 }
-
-/* Transparente (home en haut) */
 .nav-hero {
   background: transparent;
-  transition: background-color 0.3s, box-shadow 0.3s;
+  box-shadow: none;
 }
-.nav-hero .navbar-brand,
-.nav-hero .nav-link {
+.nav-hero .nav-link,
+.nav-hero .navbar-brand {
   color: #fff !important;
 }
-.nav-hero .navbar-toggler-icon {
-  filter: invert(100%);
-}
-
-/* Solide (au scroll ou sur autres pages) */
 .nav-solid {
-  background: #198754; /* vert DS Travel */
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  background-color: #198754;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
 }
-.nav-solid .navbar-brand,
-.nav-solid .nav-link {
+.nav-solid .nav-link,
+.nav-solid .navbar-brand {
   color: #fff !important;
 }
 
-/* Hover nav links */
-.navbar .nav-link:hover {
-  color: #ffd166 !important;
-}
-
-/* ============================================
-   🚘 BANNIÈRE PLEIN ÉCRAN – HOME
-============================================ */
+/* =============================== */
+/* 🚘 HERO */
+/* =============================== */
 body#home-page .fullscreen-banner {
-  background: url('/static/images/ba.jpg') center/cover no-repeat;
-  height: 100vh;
+  min-height: 100vh;
   position: relative;
   display: flex;
   align-items: center;
@@ -57,128 +49,102 @@ body#home-page .fullscreen-banner {
   text-align: center;
   color: #fff;
 }
-
 body#home-page .fullscreen-banner::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
-}
-
-body#home-page .fullscreen-banner > div {
-  position: relative;
+  background: var(--hero-img) center top/cover no-repeat;
+  filter: brightness(.65);
   z-index: 1;
 }
-
-/* ============================================
-   🟩 SECTION “POURQUOI NOUS CHOISIR”
-============================================ */
-body#home-page section {
-  scroll-margin-top: 80px;
+body#home-page .fullscreen-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0) 60%, rgba(0,0,0,.4));
+  z-index: 2;
+}
+body#home-page .fullscreen-banner > .container {
+  position: relative;
+  z-index: 3;
+}
+.hero-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: .5rem 1rem;
+  border-radius: 999px;
+  background: rgba(32,201,151,.18);
+  border: 1px solid rgba(255,255,255,.35);
+  backdrop-filter: blur(6px);
+  font-weight: 600;
 }
 
-body#home-page .bg-light {
-  background-color: #f5f7f8 !important;
+/* =============================== */
+/* 🟩 CARTES */
+/* =============================== */
+.card-prestation {
+  background: #fff;
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow);
+  transition: 0.25s ease;
+}
+.card-prestation:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 32px rgba(16,24,40,.1);
 }
 
-/* Cartes services/valeurs/engagements */
-.card-prestation,
-body#home-page .h-100 {
-  border-radius: 12px;
-  transition: all 0.3s ease;
-}
-.card-prestation:hover,
-body#home-page .h-100:hover {
-  transform: translateY(-5px);
-  box-shadow: 0px 8px 18px rgba(0, 0, 0, 0.1);
-}
-
-/* ============================================
-   💬 BOUTON WHATSAPP FLOTTANT
-============================================ */
-body#home-page .whatsapp-float {
+/* =============================== */
+/* 💬 WHATSAPP */
+/* =============================== */
+.whatsapp-float {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #25D366;
-  color: white;
+  background: #25D366;
+  color: #fff;
   border-radius: 50%;
-  padding: 16px;
-  font-size: 28px;
-  z-index: 1000;
-  text-decoration: none;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  font-size: 1.8rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+  transition: transform .2s;
+  z-index: 50;
 }
-body#home-page .whatsapp-float:hover {
-  background-color: #1ebe5c;
-  transform: scale(1.1);
+.whatsapp-float:hover {
+  transform: translateY(-2px);
 }
 
-/* ============================================
-   🖤 FOOTER – DÉGRADÉ VERT DS TRAVEL
-============================================ */
+/* =============================== */
+/* 🖤 FOOTER */
+/* =============================== */
 .site-footer {
   background: linear-gradient(160deg, #0b8043 0%, #0a6e3a 60%, #085a30 100%);
   color: #fff;
-  position: relative;
-  overflow: hidden;
 }
-
-.site-footer::before {
-  content: "";
-  position: absolute;
-  inset: -40% -20% auto auto;
-  width: 420px;
-  height: 420px;
-  border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0));
-  transform: rotate(15deg);
-  pointer-events: none;
+.footer-sep {
+  border-color: rgba(255,255,255,0.15);
 }
-
 .footer-logo {
   height: 42px;
   width: auto;
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
+}
+/* Hauteur de la navbar fixe */
+:root { --nav-h: 72px; }
+
+/* Décale le contenu sous la navbar sur toutes les pages sauf la home (qui a un hero plein écran) */
+body:not(#home-page) main { padding-top: calc(var(--nav-h) + 8px); }
+
+/* La home garde la navbar superposée au hero */
+body#home-page main { padding-top: 0; }
+/* Empêche la coupure du contenu du modale */
+.modal-body{
+  max-height: calc(100vh - 220px); /* marge pour l’en-tête + pied du modale */
+  overflow-y: auto;
 }
 
-.text-accent {
-  color: #ffd166 !important;
-}
-
-.site-footer .social {
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.site-footer a.link-light:hover,
-.site-footer .social:hover {
-  opacity: 0.85;
-  transform: translateY(-1px);
-  transition: 0.2s ease;
-}
-
-.footer-sep {
-  border-color: rgba(255, 255, 255, 0.15);
-}
-
-/* ============================================
-   ✨ DIVERS
-============================================ */
-.btn-warning {
-  background-color: #ffd166;
-  border: none;
-  color: #333;
-}
-.btn-warning:hover {
-  background-color: #f9c748;
-  color: #222;
-}
-
-.text-success {
-  color: #198754 !important;
+/* Si tu veux aussi réduire un peu le padding du modale sur petits écrans */
+@media (max-width: 992px){
+  .modal-dialog { margin: 1rem; }
 }

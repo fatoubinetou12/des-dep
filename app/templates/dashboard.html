@@ -2,101 +2,237 @@
 {% block title %}Dashboard - SD Travel{% endblock %}
 
 {% block content %}
+
+<style>
+  :root{
+    --ink:#0f172a;         /* gris bleu profond */
+    --ink-2:#475569;       /* secondaire */
+    --bg:#f6f7fb;          /* fond page */
+    --card:#ffffff;        /* cartes */
+    --pri:#0ea5e9;         /* primaire (bleu) */
+    --pri-600:#0284c7;
+    --ok:#16a34a;
+    --ko:#ef4444;
+    --ring:0 0 0 3px rgba(14,165,233,.15);
+    --shadow:0 12px 24px rgba(2,8,23,.08);
+  }
+
+  /* Layout dashboard */
+  .dashboard-container{ min-height: calc(100vh - 80px); background:var(--bg); }
+  .sidebar{
+    width:260px; background:#0b1220; color:#e5e7eb; padding:24px; position:sticky; top:0; height:100%;
+    box-shadow: inset -1px 0 0 rgba(255,255,255,.05);
+  }
+  .sidebar h2{ font-size:1.1rem; letter-spacing:.02em; color:#cbd5e1; margin-bottom:18px}
+  .menu-item{
+    padding:10px 12px; border-radius:10px; cursor:pointer; margin-bottom:6px;
+    display:flex; align-items:center; gap:10px; transition: all .18s ease;
+  }
+  .menu-item:hover{ background:rgba(255,255,255,.06); transform: translateX(2px); }
+  .menu-item.active{ background:linear-gradient(90deg, rgba(14,165,233,.25), rgba(14,165,233,.05)); color:#fff; }
+
+  /* Main section */
+  .main-content{ max-width:1400px; margin-inline:auto; }
+  .page-head{
+    display:flex; justify-content:space-between; align-items:center; gap:16px;
+    padding:8px 0 16px;
+  }
+  .page-head h3{ margin:0; color:var(--ink) }
+
+  /* Toolbar */
+  .toolbar{
+    display:flex; gap:10px; flex-wrap:wrap;
+  }
+  .toolbar .form-control{ min-width:260px; }
+  .btn-primary{
+    background:var(--pri); border-color:var(--pri);
+  }
+  .btn-primary:hover{ background:var(--pri-600); border-color:var(--pri-600); }
+
+  /* Card wrapper */
+  .card-wrap{
+    background:var(--card); border:1px solid #eef0f5; border-radius:16px; box-shadow: var(--shadow);
+  }
+  .card-head{
+    padding:14px 16px; border-bottom:1px solid #eef0f5; display:flex; align-items:center; gap:12px; justify-content:space-between;
+  }
+  .table-responsive{ border-radius: 0 0 16px 16px; }
+  table.table{ margin:0; }
+  thead.table-light th{
+    background:#f8fafc !important; color:#334155; font-weight:600; font-size:.92rem;
+    position:sticky; top:0; z-index:1;
+  }
+  td, th{ vertical-align: middle !important; }
+  .vehicle-img{ border-radius:10px; box-shadow:0 6px 16px rgba(2,8,23,.06) }
+
+  /* Badges */
+  .badge-soft{
+    background:#ecfeff; color:#0369a1; border:1px solid #bae6fd;
+  }
+  .badge-ok{
+    background:#ecfdf5; color:#166534; border:1px solid #bbf7d0;
+  }
+  .badge-ko{
+    background:#fef2f2; color:#991b1b; border:1px solid #fecaca;
+  }
+
+  /* Modal header */
+  .modal-header{
+    background:linear-gradient(90deg, var(--pri), var(--pri-600)); box-shadow: var(--ring);
+  }
+
+  /* Small screens */
+  @media (max-width: 992px){
+    .sidebar{ display:none; }
+    .dashboard-container{ padding-top:8px; }
+  }
+</style>
+
 <div class="dashboard-container d-flex">
   <!-- Sidebar -->
-  <div class="sidebar">
+  <aside class="sidebar">
     <h2>Tableau de bord</h2>
-    <div class="menu-item" onclick="window.location.href='{{ url_for('main.reservations_admin') }}'">Réservations</div>
-    <div class="menu-item active">Véhicules</div>
-    <div class="menu-item" onclick="window.location.href='{{ url_for('main.tarifs_admin') }}'">Tarifs</div>
-  </div>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('main.reservations_admin') }}'">
+      <i class="bi bi-calendar2-check"></i> Réservations
+    </div>
+    <div class="menu-item active">
+      <i class="bi bi-car-front"></i> Véhicules
+    </div>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('main.tarifs_admin') }}'">
+      <i class="bi bi-cash-coin"></i> Tarifs
+    </div>
+  </aside>
 
   <!-- Main Content -->
-  <div class="main-content w-100 p-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h3>Liste des véhicules</h3>
-      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vehicleModal" onclick="resetForm()">
-        + Nouveau véhicule
-      </button>
+  <main class="main-content w-100 p-4">
+
+    <div class="page-head">
+      <h3 class="fw-semibold">Véhicules</h3>
+      <div class="toolbar">
+        <div class="input-group">
+          <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+          <input id="searchInput" type="search" class="form-control" placeholder="Rechercher (immat, marque, modèle, type)">
+        </div>
+
+        <select id="filterDispo" class="form-select">
+          <option value="">Disponibilité : Tous</option>
+          <option value="1">Disponible</option>
+          <option value="0">Indisponible</option>
+        </select>
+
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#vehicleModal" onclick="resetForm()">
+          <i class="bi bi-plus-lg me-1"></i> Nouveau véhicule
+        </button>
+      </div>
     </div>
 
-    <!-- Tableau des véhicules -->
-    <table class="table table-bordered align-middle text-center">
-      <thead class="table-light">
-        <tr>
-          <th>Image</th>
-          <th>Immatriculation</th>
-          <th>Marque</th>
-          <th>Modèle</th>
-          <th>Caractéristiques techniques</th>
-          <th>Type</th>
-          <th>Capacité passagers</th>
-          <th>Volume coffre (bagages)</th>
-          <th>Volume coffre (sièges rabattus)</th>
-          <th>Sièges bébé</th>
-          <th>Nombre de valises</th>
-          <th>Coffre de toit</th>
-          <th>Détails coffre toit</th>
-          <th>Disponible</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for v in vehicules %}
-        <tr>
-          <td>
-            <img src="{{ url_for('static', filename=v.image or 'images/default_car.png') }}"
-                 class="vehicle-img" alt="Image" style="max-height:80px">
-          </td>
-          <td>{{ v.immatriculation }}</td>
-          <td>{{ v.marque }}</td>
-          <td>{{ v.modele }}</td>
-          <td>{{ v.caracteristiques_techniques or '-' }}</td>
-          <td>{{ v.type }}</td>
-          <td>{{ v.capacite_passagers }}</td>
-          <td>{{ v.volume_coffre_bagages or '-' }}</td>
-          <td>{{ v.volume_coffre_rabattus or '-' }}</td>
-          <td>{{ v.nb_sieges_bebe or 0 }}</td>
-          <td>{{ v.nb_valises or 0 }}</td>
-          <td>{{ 'Oui' if v.coffre_de_toit else 'Non' }}</td>
-          <td>{{ v.details_coffre_toit or '-' }}</td>
-          <td>
-            {% if v.disponible %}
-              <span class="badge bg-success">Oui</span>
+    <!-- Carte tableau -->
+    <div class="card-wrap">
+      <div class="card-head">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge badge-soft rounded-pill">{{ vehicules|length }} au total</span>
+        </div>
+        <div class="small text-muted">Astuce : clique sur “Modifier” pour pré-remplir le formulaire.</div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center">
+          <thead class="table-light">
+            <tr>
+              <th>Image</th>
+              <th>Immatriculation</th>
+              <th>Marque</th>
+              <th>Modèle</th>
+              <th>Caractéristiques techniques</th>
+              <th>Type</th>
+              <th>Capacité</th>
+              <th>Volume coffre</th>
+              <th>Sièges bébé</th>
+              <th>Valises</th>
+              <th>Coffre toit</th>
+              <th>Disponible</th>
+              <th style="min-width:120px">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="vehiculeBody">
+            {% for v in vehicules %}
+            <tr
+              data-dispo="{{ 1 if v.disponible else 0 }}"
+              data-search="{{ (v.immatriculation ~ ' ' ~ v.marque ~ ' ' ~ v.modele ~ ' ' ~ v.type)|lower }}"
+            >
+              <td>
+                <img src="{{ url_for('static', filename=v.image or 'images/default_car.png') }}"
+                     class="vehicle-img" alt="Image" style="max-height:72px">
+              </td>
+              <td class="fw-semibold">{{ v.immatriculation }}</td>
+              <td>{{ v.marque }}</td>
+              <td>{{ v.modele }}</td>
+              <td class="text-start" style="max-width:320px">
+                <div class="text-truncate" title="{{ v.caracteristiques_techniques or '-' }}">
+                  {{ v.caracteristiques_techniques or '-' }}
+                </div>
+              </td>
+              <td><span class="badge badge-soft rounded-pill">{{ v.type }}</span></td>
+              <td>{{ v.capacite_passagers }}</td>
+              <td>
+                <div>{{ v.volume_coffre_bagages or '-' }} <span class="text-muted">bag.</span></div>
+                <div class="text-muted small">{{ v.volume_coffre_rabattus or '-' }} <span>rab.</span></div>
+              </td>
+              <td>{{ v.nb_sieges_bebe or 0 }}</td>
+              <td>{{ v.nb_valises or 0 }}</td>
+              <td>{{ 'Oui' if v.coffre_de_toit else 'Non' }}</td>
+              <td>
+                {% if v.disponible %}
+                  <span class="badge badge-ok rounded-pill"><i class="bi bi-check2"></i> Oui</span>
+                {% else %}
+                  <span class="badge badge-ko rounded-pill"><i class="bi bi-x"></i> Non</span>
+                {% endif %}
+              </td>
+              <td>
+                <div class="d-flex gap-2 justify-content-center">
+                  <button class="btn btn-outline-primary btn-sm"
+                          data-bs-toggle="modal"
+                          data-bs-target="#vehicleModal"
+                          onclick="editVehicle('{{ v.id }}','{{ v.immatriculation }}','{{ v.marque }}','{{ v.modele }}',
+                                               '{{ v.caracteristiques_techniques|e }}','{{ v.type }}','{{ v.capacite_passagers }}',
+                                               '{{ v.volume_coffre_bagages or '' }}','{{ v.volume_coffre_rabattus or '' }}',
+                                               '{{ v.nb_sieges_bebe or 0 }}','{{ v.nb_valises or 0 }}',
+                                               '{{ v.coffre_de_toit }}','{{ v.details_coffre_toit or '' }}',
+                                               '{{ v.disponible }}','{{ v.image or '' }}')">
+                    <i class="bi bi-pencil-square"></i> Modifier
+                  </button>
+                  <a href="{{ url_for('main.supprimer_vehicule') }}?id={{ v.id }}"
+                     class="btn btn-outline-danger btn-sm"
+                     onclick="return confirm('Supprimer ce véhicule ?')">
+                    <i class="bi bi-trash3"></i>
+                  </a>
+                </div>
+              </td>
+            </tr>
             {% else %}
-              <span class="badge bg-danger">Non</span>
-            {% endif %}
-          </td>
-          <td>
-            <button class="btn btn-outline-primary btn-sm"
-                    data-bs-toggle="modal"
-                    data-bs-target="#vehicleModal"
-                    onclick="editVehicle('{{ v.id }}','{{ v.immatriculation }}','{{ v.marque }}','{{ v.modele }}',
-                                         '{{ v.caracteristiques_techniques|e }}','{{ v.type }}','{{ v.capacite_passagers }}',
-                                         '{{ v.volume_coffre_bagages or '' }}','{{ v.volume_coffre_rabattus or '' }}',
-                                         '{{ v.nb_sieges_bebe or 0 }}','{{ v.nb_valises or 0 }}',
-                                         '{{ v.coffre_de_toit }}','{{ v.details_coffre_toit or '' }}',
-                                         '{{ v.disponible }}','{{ v.image or '' }}')">
-              Modifier
-            </button>
-            <a href="{{ url_for('main.supprimer_vehicule') }}?id={{ v.id }}"
-               class="btn btn-outline-danger btn-sm"
-               onclick="return confirm('Supprimer ce véhicule ?')">
-              Supprimer
-            </a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+            <tr>
+              <td colspan="13" class="py-5">
+                <div class="text-muted">
+                  <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                  Aucun véhicule pour le moment.
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
 </div>
 
-<!-- Modal - Formulaire véhicule -->
+<!-- Modal - Formulaire véhicule (inchangé, juste stylé) -->
 <div class="modal fade" id="vehicleModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+
     <div class="modal-content">
-      <div class="modal-header bg-primary text-white">
+      <div class="modal-header text-white">
         <h5 class="modal-title" id="modalTitle">Ajouter un véhicule</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
@@ -105,7 +241,7 @@
         <div class="modal-body">
           <input type="hidden" id="vehicleId" name="vehicle_id">
 
-          <div class="row">
+          <div class="row g-3">
             <div class="col-md-6">
               {{ form.photo.label(class="form-label") }}
               {{ form.photo(class="form-control") }}
@@ -145,7 +281,7 @@
             </div>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer bg-light">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
           <button type="submit" class="btn btn-success" id="submitBtn">Ajouter</button>
         </div>
@@ -155,6 +291,7 @@
 </div>
 
 <script>
+/* Pré-remplir le form en édition */
 function editVehicle(id, immat, marque, modele, carac, type, capacite, volBag, volRab, siegesBebe, nbValises,
                      coffreToit, detailsCoffre, dispo, image) {
   document.getElementById('modalTitle').textContent = 'Modifier le véhicule';
@@ -170,9 +307,9 @@ function editVehicle(id, immat, marque, modele, carac, type, capacite, volBag, v
   document.getElementById('volume_coffre_rabattus').value = volRab;
   document.getElementById('nb_sieges_bebe').value = siegesBebe;
   document.getElementById('nb_valises').value = nbValises;
-  document.getElementById('coffre_de_toit').checked = coffreToit === 'True';
+  document.getElementById('coffre_de_toit').checked = (coffreToit === 'True' || coffreToit === true);
   document.getElementById('details_coffre_toit').value = detailsCoffre;
-  document.getElementById('disponible').checked = dispo === 'True';
+  document.getElementById('disponible').checked = (dispo === 'True' || dispo === true);
 
   if (image) {
     document.getElementById('vehicleImagePreview').src = '/static/' + image;
@@ -184,6 +321,7 @@ function editVehicle(id, immat, marque, modele, carac, type, capacite, volBag, v
   document.getElementById('vehicleForm').action = '/vehicule/modifier/' + id;
 }
 
+/* Reset form en création */
 function resetForm() {
   document.getElementById('modalTitle').textContent = 'Ajouter un véhicule';
   document.getElementById('submitBtn').textContent = 'Ajouter';
@@ -191,5 +329,27 @@ function resetForm() {
   document.getElementById('vehicleImagePreview').style.display = 'none';
   document.getElementById('vehicleForm').action = '/admin/dashboard';
 }
+
+/* Filtrage live par recherche + disponibilité */
+(function(){
+  const input = document.getElementById('searchInput');
+  const select = document.getElementById('filterDispo');
+  const rows = Array.from(document.querySelectorAll('#vehiculeBody tr'));
+
+  function applyFilter(){
+    const q = (input.value || '').toLowerCase().trim();
+    const f = select.value; // '', '1', '0'
+    rows.forEach(tr=>{
+      const hay = (tr.getAttribute('data-search') || '');
+      const dispo = tr.getAttribute('data-dispo');
+      const matchQ = !q || hay.includes(q);
+      const matchD = !f || dispo === f;
+      tr.style.display = (matchQ && matchD) ? '' : 'none';
+    });
+  }
+  input.addEventListener('input', applyFilter);
+  select.addEventListener('change', applyFilter);
+})();
 </script>
+
 {% endblock %}

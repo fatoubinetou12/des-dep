@@ -1,36 +1,31 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{% block title %}DS Travel{% endblock %}</title>
 
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-
   <!-- Animate.css -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- CSS principal -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 
-  {# Évite l'indexation des pages sensibles #}
-  {% if request.endpoint in ['main.login', 'main.admin_dashboard', 'main.reservations_admin', 'main.tarifs_admin'] %}
+  {% if request.endpoint in ['main.login','main.admin_dashboard','main.reservations_admin','main.tarifs_admin'] %}
     <meta name="robots" content="noindex,nofollow">
   {% endif %}
 </head>
-<body>
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark fixed-top 
-              {% if request.endpoint == 'main.home' %}bg-transparent{% else %}bg-success{% endif %}">
+
+<body id="{% if request.endpoint == 'main.home' %}home-page{% endif %}">
+  <!-- NAVBAR -->
+  <nav id="mainNav" class="navbar navbar-expand-lg fixed-top">
     <div class="container">
       <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('main.home') }}">
-        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="DS Travel" style="height:48px; width:auto;">
-        <span class="d-none d-sm-inline"></span>
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="DS Travel" style="height:48px;width:auto;">
       </a>
 
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu" aria-label="Menu">
@@ -43,7 +38,6 @@
           <li class="nav-item"><a class="nav-link" href="{{ url_for('main.vehicules_disponibles') }}">Véhicules</a></li>
           <li class="nav-item"><a class="nav-link" href="{{ url_for('main.contact_post') }}">Contact</a></li>
 
-          {# Liens admin #}
           {% if session.get('admin_logged_in') %}
             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.admin_dashboard') }}">Dashboard</a></li>
             <li class="nav-item">
@@ -55,12 +49,12 @@
     </div>
   </nav>
 
-  <!-- Flash Messages -->
-  <div class="container mt-5 pt-4">
+  <!-- FLASH MESSAGES -->
+  <div class="container position-relative" id="flash-zone">
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
-          <div class="alert alert-{{ category }} alert-dismissible fade show mt-2" role="alert">
+          <div class="alert alert-{{ category }} alert-dismissible fade show mt-5 pt-4" role="alert">
             {{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
           </div>
@@ -69,95 +63,70 @@
     {% endwith %}
   </div>
 
-  <!-- Main Content -->
+  <!-- CONTENU -->
   <main>
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Footer -->
+  <!-- FOOTER -->
   <footer class="site-footer mt-5">
     <div class="container py-5">
       <div class="row g-4 align-items-start">
-        <!-- Marque -->
         <div class="col-md-4">
-          <div class="d-flex align-items-center mb-3">
-            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="DS Travel" class="footer-logo me-2">
-          </div>
-          <p class="text-white-50 mb-3">
-            Chauffeur privé • Transferts aéroport • Mise à disposition.  
-            Ponctualité, confort et sécurité.
-          </p>
-          <div class="d-flex gap-2">
-            <a class="btn btn-outline-light btn-sm rounded-circle social" href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-            <a class="btn btn-outline-light btn-sm rounded-circle social" href="#" aria-label="Google"><i class="fab fa-google"></i></a>
-            <a class="btn btn-outline-light btn-sm rounded-circle social" href="#" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-          </div>
+          <img src="{{ url_for('static', filename='images/logo.png') }}" alt="DS Travel" class="footer-logo me-2 mb-3">
+          <p class="text-white-50">Chauffeur privé • Transferts aéroport • Mise à disposition.<br>Ponctualité, confort et sécurité.</p>
         </div>
-
-        <!-- Contact -->
         <div class="col-md-4">
           <h6 class="text-uppercase text-white-50 mb-3">Nous contacter</h6>
           <ul class="list-unstyled m-0">
-            <li class="mb-2">
-              <i class="fa-solid fa-phone me-2 text-accent"></i>
-              <a href="tel:+221764159999" class="link-light text-decoration-none">+221 76 415 99 99</a>
-            </li>
-            <li class="mb-2">
-              <i class="fa-solid fa-envelope me-2 text-accent"></i>
-              <a href="mailto:contact@dsdv.org" class="link-light text-decoration-none">contact@dsdv.org</a>
-            </li>
-            <li>
-              <i class="fa-solid fa-location-dot me-2 text-accent"></i>
-              Dakar, Sénégal
-            </li>
+            <li><i class="fa-solid fa-phone me-2 text-accent"></i><a href="tel:+221764159999" class="link-light text-decoration-none">+221 76 415 99 99</a></li>
+            <li><i class="fa-solid fa-envelope me-2 text-accent"></i><a href="mailto:contact@dsdv.org" class="link-light text-decoration-none">contact@dsdv.org</a></li>
+            <li><i class="fa-solid fa-location-dot me-2 text-accent"></i>Dakar, Sénégal</li>
           </ul>
         </div>
-
-        <!-- Liens -->
         <div class="col-md-4">
           <h6 class="text-uppercase text-white-50 mb-3">Informations</h6>
-          <ul class="list-unstyled m-0">
-            <li class="mb-2"><a href="{{ url_for('main.about') }}" class="link-light text-decoration-none">À propos</a></li>
-            <li class="mb-2"><a href="{{ url_for('main.home', _anchor='notre-flotte') }}" class="link-light text-decoration-none">Nos véhicules</a></li>
-            <li class="mb-2"><a href="#" class="link-light text-decoration-none">CGV</a></li>
-            <li><a href="#" class="link-light text-decoration-none">Politique de confidentialité</a></li>
+          <ul class="list-unstyled">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.home') }}">Accueil</a></li>
+             <li class="nav-item"><a class="nav-link" href="{{ url_for('main.vehicules_disponibles') }}">Nos Véhicules</a></li>
+              <li class="nav-item"><a class="nav-link" href="{{ url_for('main.contact_post') }}">Contact</a></li>
+            <li><a href="{{ url_for('main.cgv') }}"class="link-light text-decoration-none">CGV</a></li>
+          
+
+           
           </ul>
         </div>
       </div>
     </div>
-
     <hr class="footer-sep my-0">
+    <div class="container py-3 d-flex justify-content-between flex-wrap">
+      <small class="text-white-50">© 2025 DS Travel — Tous droits réservés</small>
 
-    <div class="container py-3">
-      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-        <small class="text-white-50">© 2025 DS Travel — Tous droits réservés</small>
-        <small class="text-white-50">NINEA · RCCM · Agrément transport</small>
-      </div>
     </div>
   </footer>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", function() {
-      const navbar = document.querySelector(".navbar");
-      if (!navbar) return;
+    document.addEventListener('DOMContentLoaded', () => {
+      const nav = document.getElementById('mainNav');
+      const isHome = document.body.id === 'home-page';
 
-      function updateNavbar() {
+      function updateNav() {
+        if (!isHome) {
+          nav.classList.add('nav-solid');
+          return;
+        }
         if (window.scrollY > 50) {
-          navbar.classList.remove("bg-transparent");
-          navbar.classList.add("bg-success", "shadow");
+          nav.classList.add('nav-solid');
+          nav.classList.remove('nav-hero');
         } else {
-          navbar.classList.add("bg-transparent");
-          navbar.classList.remove("bg-success", "shadow");
+          nav.classList.add('nav-hero');
+          nav.classList.remove('nav-solid');
         }
       }
-
-      // Initialisation
-      updateNavbar();
-      
-      // Écouter le scroll
-      window.addEventListener("scroll", updateNavbar);
+      updateNav();
+      window.addEventListener('scroll', updateNav);
     });
   </script>
 </body>

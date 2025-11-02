@@ -3,19 +3,105 @@
 {% block title %}Gestion des Réservations{% endblock %}
 
 {% block content %}
+<style>
+  :root{
+    --ink:#0f172a;         /* gris bleu profond */
+    --ink-2:#475569;       /* secondaire */
+    --bg:#f6f7fb;          /* fond page */
+    --card:#ffffff;        /* cartes */
+    --pri:#0ea5e9;         /* primaire (bleu) */
+    --pri-600:#0284c7;
+    --ok:#16a34a;
+    --ko:#ef4444;
+    --ring:0 0 0 3px rgba(14,165,233,.15);
+    --shadow:0 12px 24px rgba(2,8,23,.08);
+  }
+
+  /* Layout dashboard */
+  .dashboard-container{ min-height: calc(100vh - 80px); background:var(--bg); }
+  .sidebar{
+    width:260px; background:#0b1220; color:#e5e7eb; padding:24px; position:sticky; top:0; height:100%;
+    box-shadow: inset -1px 0 0 rgba(255,255,255,.05);
+  }
+  .sidebar h2{ font-size:1.1rem; letter-spacing:.02em; color:#cbd5e1; margin-bottom:18px}
+  .menu-item{
+    padding:10px 12px; border-radius:10px; cursor:pointer; margin-bottom:6px;
+    display:flex; align-items:center; gap:10px; transition: all .18s ease;
+  }
+  .menu-item:hover{ background:rgba(255,255,255,.06); transform: translateX(2px); }
+  .menu-item.active{ background:linear-gradient(90deg, rgba(14,165,233,.25), rgba(14,165,233,.05)); color:#fff; }
+
+  /* Main section */
+  .main-content{ max-width:1400px; margin-inline:auto; }
+  .page-head{
+    display:flex; justify-content:space-between; align-items:center; gap:16px;
+    padding:8px 0 16px;
+  }
+  .page-head h3{ margin:0; color:var(--ink) }
+
+  /* Toolbar */
+  .toolbar{
+    display:flex; gap:10px; flex-wrap:wrap;
+  }
+  .toolbar .form-control{ min-width:260px; }
+  .btn-primary{
+    background:var(--pri); border-color:var(--pri);
+  }
+  .btn-primary:hover{ background:var(--pri-600); border-color:var(--pri-600); }
+
+  /* Card wrapper */
+  .card-wrap{
+    background:var(--card); border:1px solid #eef0f5; border-radius:16px; box-shadow: var(--shadow);
+  }
+  .card-head{
+    padding:14px 16px; border-bottom:1px solid #eef0f5; display:flex; align-items:center; gap:12px; justify-content:space-between;
+  }
+  .table-responsive{ border-radius: 0 0 16px 16px; }
+  table.table{ margin:0; }
+  thead.table-light th{
+    background:#f8fafc !important; color:#334155; font-weight:600; font-size:.92rem;
+    position:sticky; top:0; z-index:1;
+  }
+  td, th{ vertical-align: middle !important; }
+  .vehicle-img{ border-radius:10px; box-shadow:0 6px 16px rgba(2,8,23,.06) }
+
+  /* Badges */
+  .badge-soft{
+    background:#ecfeff; color:#0369a1; border:1px solid #bae6fd;
+  }
+  .badge-ok{
+    background:#ecfdf5; color:#166534; border:1px solid #bbf7d0;
+  }
+  .badge-ko{
+    background:#fef2f2; color:#991b1b; border:1px solid #fecaca;
+  }
+
+  /* Modal header */
+  .modal-header{
+    background:linear-gradient(90deg, var(--pri), var(--pri-600)); box-shadow: var(--ring);
+  }
+
+  /* Small screens */
+  @media (max-width: 992px){
+    .sidebar{ display:none; }
+    .dashboard-container{ padding-top:8px; }
+  }
+</style>
 
 <div class="dashboard-container d-flex">
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <h2>Tableau de bord</h2>
-        <div class="menu-item active" onclick="window.location.href='{{ url_for('main.reservations_admin') }}'">
-            Réservations
-        </div>
-        <div class="menu-item" onclick="window.location.href='{{ url_for('main.admin_dashboard') }}'">
-            Véhicules
-        </div>
-        <div class="menu-item">Clients</div>
+     <!-- Sidebar -->
+     <aside class="sidebar">
+    <h2>Tableau de bord</h2>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('main.reservations_admin') }}'">
+      <i class="bi bi-calendar2-check"></i> Réservations
     </div>
+    <div class="menu-item active">
+      <i class="bi bi-car-front"></i> Véhicules
+    </div>
+    <div class="menu-item" onclick="window.location.href='{{ url_for('main.tarifs_admin') }}'">
+      <i class="bi bi-cash-coin"></i> Tarifs
+    </div>
+  </aside>
 
     <!-- Contenu principal -->
     <div class="container mt-4">
